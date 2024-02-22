@@ -1,0 +1,1 @@
+export { OutboxConsumer } from './outbox'

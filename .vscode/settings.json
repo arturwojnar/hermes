@@ -1,0 +1,38 @@
+{
+  "javascript.updateImportsOnFileMove.enabled": "always",
+  "search.exclude": {
+      "**/.git": true,
+      "**/.svn": true,
+      "**/.hg": true,
+      "**/CSV": true,
+      "**/DS_STORE": true,
+      "**/bower_components": true,
+      "**/dist": true,
+      "package-lock.json": true,
+      "**/**/bundle.js": true
+  },
+  // "eslint.validate": ["javascript"],
+  // "typescript.validate.enable": true,
+  "editor.tabSize": 2,
+  "[typescript]": {
+      "editor.defaultFormatter": "esbenp.prettier-vscode",
+      "editor.formatOnSave": true,
+      "editor.codeActionsOnSave": {
+        "source.organizeImports": "explicit",
+        "source.addMissingImports": "explicit",
+        "source.fixAll.eslint": "explicit"
+      },
+  },
+  "nodejs-testing.extensions": [
+    {
+      "extensions": ["mts", "cts", "ts"],
+      "parameters": ["--loader", "tsx"]
+    }
+  ],
+  "nodejs-testing.exclude": [
+    "**/node_modules/**"
+  ],
+  "nodejs-testing.include": [
+    "./lib"
+  ]
+}

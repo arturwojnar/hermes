@@ -1,0 +1,36 @@
+{
+  // Use IntelliSense to learn about possible Node.js debug attributes.
+  // Hover to view descriptions of existing attributes.
+  // For more information, visit: https://go.microsoft.com/fwlink/?linkid=830387
+  "version": "0.2.0",
+  "configurations": [
+    {
+      "console": "integratedTerminal",
+      "internalConsoleOptions": "neverOpen",
+      "name": "Test",
+      "program": "${workspaceFolder}/example.ts",
+      "request": "launch",
+      "restart": true,
+      "runtimeExecutable": "${workspaceFolder}/node_modules/.bin/nodemon",
+      "skipFiles": ["<node_internals>/**"],
+      "type": "pwa-node",
+      "outputCapture": "std"
+    },
+    {
+      "args": [
+        "-c",
+        "${workspaceFolder}/jest.config.js",
+        "--detectOpenHandles",
+        "--colors",
+        "--verbose"
+      ],
+      "internalConsoleOptions": "neverOpen",
+      "console": "integratedTerminal",
+      "name": "test",
+      "program": "${workspaceRoot}/node_modules/.bin/jest",
+      "request": "launch",
+      "skipFiles": ["<node_internals>/**"],
+      "type": "pwa-node"
+    }
+  ]
+}

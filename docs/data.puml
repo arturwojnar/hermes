@@ -1,0 +1,24 @@
+@startuml "Data structure"
+
+object OutboxMessages {
+  <#lightblue,#black>|=  key  |=  type  |
+  <#white>|  _id  |  ObjectId  |
+  <#white>|  occurredOn  |  Date  |
+  <#white>|  type  |  String  |
+  <#white>|  data  |  Object  |
+  <#white>|  eventNumber  |  Int32  |
+  <#white>|  partitionKey  |  String  |
+}
+
+object OutboxConsumers {
+  <#lightblue,#black>|=  key  |=  type  |
+  <#white>|  _id  |  ObjectId  |
+  <#white>|  lastProcessedEventNumber  |  Date  |
+  <#white>|  partitionKey  |  String  |
+  <#white>|  lastUpdatedAt  |  Date  |
+}
+
+OutboxMessages -[hidden]-> OutboxConsumers
+OutboxMessages ||--{ OutboxConsumers
+
+@enduml

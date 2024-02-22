@@ -1,0 +1,24 @@
+@startuml "Flow"
+
+participant Service as svc
+participant outbox as "Outbox Processor"
+database MongoDB as db
+database EventBus as event
+
+activate outbox
+svc->outbox: **init**(partitionKey)
+activate db
+outbox->db: get **resume token** for **partitionKey**
+db-->outbox: resume token **RT**
+deactivate db
+outbox->outbox: **watch**(partitionKey, RT)
+outbox-->svc: initialized
+deactivate outbox
+
+group One transaction
+  svc->outbox: **publish**(events)
+  outbox->db: save events into OutboxMessages\nwith partitionKey and according event numbers
+  db-->outbox: OK
+end
+
+@enduml
