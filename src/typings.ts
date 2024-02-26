@@ -1,4 +1,4 @@
-import { ChangeStreamInsertDocument, Db, ObjectId, ResumeToken } from 'mongodb'
+import { ChangeStreamInsertDocument, Db, MongoClient, ObjectId, ResumeToken } from 'mongodb'
 
 type OutboxMessage<Event> = {
   _id: ObjectId
@@ -19,6 +19,7 @@ type OutboxConsumer = {
 }
 
 type ConsumerCreationParams<Event> = Readonly<{
+  client: MongoClient
   db: Db
   partitionKey: string
   waitAfterFailedPublishMs?: number

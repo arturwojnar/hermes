@@ -25,6 +25,7 @@ type MedicineEvent = MedicineAdded | MedicineRemoved
   const client = new MongoClient('mongodb://127.0.0.1:27017/?replicaSet=rs0&directConnection=true')
   const db = client.db('test')
   const outbox = OutboxConsumer<MedicineEvent>({
+    client,
     db,
     partitionKey: 'default',
     publishEvent: async (event) => {

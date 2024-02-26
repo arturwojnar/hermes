@@ -15,6 +15,7 @@ test('Sending one event works', async () => {
     const messagesCollection = db.collection(OutboxMessagesCollectionName)
     const consumersCollection = db.collection(OutboxConsumersCollectionName)
     const outbox = OutboxConsumer<MedicineEvent>({
+      client,
       db,
       partitionKey: 'default',
       publishEvent: publishEventStub,

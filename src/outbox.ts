@@ -9,7 +9,7 @@ import { ConsumerCreationParams, OutboxMessage } from './typings'
 import { swallow } from './utils'
 
 export const OutboxConsumer = <Event>(params: ConsumerCreationParams<Event>) => {
-  const { db, partitionKey, publishEvent: _publishEvent } = params
+  const { client, db, partitionKey, publishEvent: _publishEvent } = params
   const waitAfterFailedPublishMs = params.waitAfterFailedPublishMs || 1000
   const onError = params.onError || noop
   const messages = db.collection<OutboxMessage<Event>>(OutboxMessagesCollectionName)
@@ -58,17 +58,40 @@ export const OutboxConsumer = <Event>(params: ConsumerCreationParams<Event>) => 
       }
     },
 
-    async publishEvent(event: Event, session: ClientSession) {
-      await messages.insertOne(
-        {
+    async publishEvent(event: Event, sessionOrCallback?: ClientSession | ((session: ClientSession) => Promise<void>)) {
+      if (sessionOrCallback instanceof ClientSession) {
+        await messages.insertOne(
+          {
+            _id: new ObjectId(),
+            partitionKey,
+            occurredAt: new Date(),
+            data: event,
+          },
+          { session: sessionOrCallback },
+        )
+      } else if (!sessionOrCallback) {
+        await messages.insertOne({
           _id: new ObjectId(),
           partitionKey,
-          occurredAt: new Date(), // TODO
+          occurredAt: new Date(),
           data: event,
-          // type: 'rrr',
-        },
-        { session },
-      )
+        })
+      } else {
+        await client.withSession(async (session) => {
+          await session.withTransaction(async (session) => {
+            await sessionOrCallback(session)
+            await messages.insertOne(
+              {
+                _id: new ObjectId(),
+                partitionKey,
+                occurredAt: new Date(),
+                data: event,
+              },
+              { session },
+            )
+          })
+        })
+      }
     },
   }
 }
