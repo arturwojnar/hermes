@@ -1,6 +1,7 @@
 import { AsyncOrSync } from 'ts-essentials'
 
 const noop = () => {}
+const isNil = (value: unknown) => typeof value === 'undefined' || value === null
 const swallow = (fn: () => AsyncOrSync<unknown>): AsyncOrSync<unknown> => {
   try {
     const result = fn()
@@ -15,4 +16,4 @@ const swallow = (fn: () => AsyncOrSync<unknown>): AsyncOrSync<unknown> => {
   }
 }
 
-export { noop, swallow }
+export { isNil, noop, swallow }

@@ -17,3 +17,11 @@ export type MedicineRemoved = Event<
   }
 >
 export type MedicineEvent = MedicineAdded | MedicineRemoved
+
+export const generateEvent = (medicineId: string): MedicineAdded => ({
+  name: 'MedicineAdded',
+  data: {
+    medicineId,
+    patientId: 'patient99',
+  },
+})

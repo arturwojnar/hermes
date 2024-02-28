@@ -19,6 +19,7 @@ test('Sending one event works', async () => {
       db,
       partitionKey: 'default',
       publishEvent: publishEventStub,
+      shouldDisposeOnSigterm: false,
     })
     const event: MedicineAdded = {
       name: 'MedicineAdded',

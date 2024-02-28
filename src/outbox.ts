@@ -1,18 +1,30 @@
 import { ClientSession, ObjectId } from 'mongodb'
 import { setTimeout } from 'node:timers/promises'
 import { noop } from 'ts-essentials'
+import { addDisposeOnSigterm } from './addDisposeOnSigterm'
 import { OutboxMessagesCollectionName } from './consts'
 import { createChangeStream } from './createChangeStream'
 import { ensureIndexes } from './ensureIndexes'
 import { getConsumer } from './getConsumer'
 import { ConsumerCreationParams, OutboxMessage } from './typings'
-import { swallow } from './utils'
+import { isNil, swallow } from './utils'
 
 export const OutboxConsumer = <Event>(params: ConsumerCreationParams<Event>) => {
   const { client, db, partitionKey, publishEvent: _publishEvent } = params
   const waitAfterFailedPublishMs = params.waitAfterFailedPublishMs || 1000
+  const shouldDisposeOnSigterm = isNil(params.shouldDisposeOnSigterm) ? true : !!params.shouldDisposeOnSigterm
   const onError = params.onError || noop
   const messages = db.collection<OutboxMessage<Event>>(OutboxMessagesCollectionName)
+  const addMessage = async (event: Event, partitionKey: string, session?: ClientSession) =>
+    await messages.insertOne(
+      {
+        _id: new ObjectId(),
+        partitionKey,
+        occurredAt: new Date(),
+        data: event,
+      },
+      { session },
+    )
 
   return {
     async start() {
@@ -21,9 +33,12 @@ export const OutboxConsumer = <Event>(params: ConsumerCreationParams<Event>) => 
       const consumer = await getConsumer(db, partitionKey)
       const watchCursor = createChangeStream<Event>(messages, partitionKey, consumer.resumeToken)
       const _waitUntilEventIsSent = async (event: Event) => {
+        let published = false
+
         while (!watchCursor.closed) {
           try {
             await _publishEvent(event)
+            published = true
             break
           } catch (error) {
             // TODO
@@ -31,6 +46,8 @@ export const OutboxConsumer = <Event>(params: ConsumerCreationParams<Event>) => 
             continue
           }
         }
+
+        return published
       }
       const watch = async () => {
         while (!watchCursor.closed) {
@@ -41,8 +58,9 @@ export const OutboxConsumer = <Event>(params: ConsumerCreationParams<Event>) => 
               continue
             }
 
-            await _waitUntilEventIsSent(message.data)
-            await consumer.update(documentKey._id, resumeToken)
+            if (await _waitUntilEventIsSent(message.data)) {
+              await consumer.update(documentKey._id, resumeToken)
+            }
           }
         }
       }
@@ -51,47 +69,37 @@ export const OutboxConsumer = <Event>(params: ConsumerCreationParams<Event>) => 
         .catch(onError)
         .finally(() => swallow(() => watchCursor.close()))
 
-      return async function stop() {
+      const stop = async function stop() {
         if (!watchCursor.closed) {
           await watchCursor.close()
         }
       }
+
+      if (shouldDisposeOnSigterm) {
+        addDisposeOnSigterm(stop)
+      }
+
+      return stop
     },
 
     async publishEvent(event: Event, sessionOrCallback?: ClientSession | ((session: ClientSession) => Promise<void>)) {
-      if (sessionOrCallback instanceof ClientSession) {
-        await messages.insertOne(
-          {
-            _id: new ObjectId(),
-            partitionKey,
-            occurredAt: new Date(),
-            data: event,
-          },
-          { session: sessionOrCallback },
-        )
-      } else if (!sessionOrCallback) {
-        await messages.insertOne({
-          _id: new ObjectId(),
-          partitionKey,
-          occurredAt: new Date(),
-          data: event,
-        })
+      if (sessionOrCallback instanceof ClientSession || !sessionOrCallback) {
+        await addMessage(event, partitionKey, sessionOrCallback)
       } else {
         await client.withSession(async (session) => {
           await session.withTransaction(async (session) => {
             await sessionOrCallback(session)
-            await messages.insertOne(
-              {
-                _id: new ObjectId(),
-                partitionKey,
-                occurredAt: new Date(),
-                data: event,
-              },
-              { session },
-            )
+            await addMessage(event, partitionKey, session)
           })
         })
       }
+    },
+
+    async publishEvents(
+      events: Event[],
+      sessionOrCallback?: ClientSession | ((session: ClientSession) => Promise<void>),
+    ) {
+      //
     },
   }
 }

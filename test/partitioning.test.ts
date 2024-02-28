@@ -4,16 +4,8 @@ import { ObjectId } from 'mongodb'
 import nodeTimersPromises from 'node:timers/promises'
 import { OutboxConsumersCollectionName, OutboxMessagesCollectionName } from '../src/consts'
 import { OutboxConsumer } from '../src/outbox'
-import { MedicineAdded, MedicineEvent } from './events'
+import { MedicineEvent, generateEvent } from './events'
 import { mongodb } from './mongodb'
-
-const generateEvent = (medicineId: string): MedicineAdded => ({
-  name: 'MedicineAdded',
-  data: {
-    medicineId,
-    patientId: 'patient99',
-  },
-})
 
 test('Sending many events at once in order works', async () => {
   const publishEventStub = jest.fn().mockResolvedValue(undefined)
@@ -27,12 +19,14 @@ test('Sending many events at once in order works', async () => {
       db,
       partitionKey: 'tenant-1',
       publishEvent: publishEventStub,
+      shouldDisposeOnSigterm: false,
     })
     const outbox2 = OutboxConsumer<MedicineEvent>({
       client,
       db,
       partitionKey: 'tenant-2',
       publishEvent: publishEventStub,
+      shouldDisposeOnSigterm: false,
     })
     const event1 = generateEvent('med1')
     const event2 = generateEvent('med2')

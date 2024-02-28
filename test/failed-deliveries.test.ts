@@ -7,8 +7,8 @@ import { OutboxConsumer } from '../src/outbox'
 import { MedicineEvent, generateEvent } from './events'
 import { mongodb } from './mongodb'
 
-test('Sending many events at once in order works', async () => {
-  const publishEventStub = jest.fn().mockResolvedValue(undefined)
+test('Publishing an event may fail and then the outbox consumer should try to do it so until it succeeds', async () => {
+  const publishEventStub = jest.fn().mockResolvedValueOnce(undefined).mockRejectedValue(new Error())
 
   await mongodb(async (client, onDispose) => {
     const db = client.db('test')
@@ -18,8 +18,9 @@ test('Sending many events at once in order works', async () => {
       client,
       db,
       partitionKey: 'default',
-      publishEvent: publishEventStub,
+      waitAfterFailedPublishMs: 10,
       shouldDisposeOnSigterm: false,
+      publishEvent: publishEventStub,
     })
     const event1 = generateEvent('med1')
     const event2 = generateEvent('med2')
@@ -52,7 +53,8 @@ test('Sending many events at once in order works', async () => {
       })
     })
 
-    await nodeTimersPromises.setTimeout(500)
+    await nodeTimersPromises.setTimeout(10000)
+    await stop()
 
     const messages = await messagesCollection.find().toArray()
     expect(messages).toEqual([
@@ -87,10 +89,11 @@ test('Sending many events at once in order works', async () => {
         data: event5,
       },
     ])
-    expect(await consumersCollection.find().toArray()).toEqual([
+    const a = await consumersCollection.find().toArray()
+    expect(a).toEqual([
       {
         _id: expect.any(ObjectId),
-        lastProcessedId: messages[4]._id,
+        lastProcessedId: messages[0]._id,
         resumeToken: expect.anything(),
         partitionKey: 'default',
         lastUpdatedAt: expect.any(Date),
