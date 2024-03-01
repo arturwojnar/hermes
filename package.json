@@ -29,7 +29,7 @@
     "lint": "eslint ./src/ --fix",
     "prepare": "husky install",
     "semantic-release": "semantic-release",
-    "test": "jest --colors --coverage --verbose --forceExit",
+    "test": "jest --colors --coverage --verbose --maxConcurrency=15",
     "typecheck": "tsc --noEmit"
   },
   "author": {

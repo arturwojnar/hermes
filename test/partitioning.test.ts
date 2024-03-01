@@ -10,8 +10,7 @@ import { mongodb } from './mongodb'
 test('Sending many events at once in order works', async () => {
   const publishEventStub = jest.fn().mockResolvedValue(undefined)
 
-  await mongodb(async (client, onDispose) => {
-    const db = client.db('test')
+  await mongodb(async (db, client, onDispose) => {
     const messagesCollection = db.collection(OutboxMessagesCollectionName)
     const consumersCollection = db.collection(OutboxConsumersCollectionName)
     const outbox1 = OutboxConsumer<MedicineEvent>({

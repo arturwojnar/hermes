@@ -1,35 +1,50 @@
-import { MongoClient } from 'mongodb'
+import { Db, MongoClient, ObjectId } from 'mongodb'
 import { MongoMemoryReplSet } from 'mongodb-memory-server'
+import { setInterval } from 'node:timers/promises'
 import { swallow } from '../src/utils'
 
-export const mongodb = async (
-  test: (client: MongoClient, onDispose: (fn: () => Promise<void>) => void) => Promise<void | never>,
-) => {
-  let replSet: MongoMemoryReplSet | null = null
-  let con: MongoClient | null = null
+let replSet: MongoMemoryReplSet | null = null
+let connection: MongoClient | null = null
+let instances = 0
 
-  try {
+export const mongodb = async (
+  test: (db: Db, client: MongoClient, onDispose: (fn: () => Promise<void>) => void) => Promise<void | never>,
+) => {
+  if (!replSet || !connection) {
     replSet = await MongoMemoryReplSet.create({
       replSet: { count: 1, storageEngine: 'wiredTiger' },
       binary: { version: '7.0.5' },
     })
-    con = await MongoClient.connect(replSet.getUri(), {})
-    const disposable: (() => Promise<void>)[] = []
-    const onDispose = (fn: () => Promise<void>) => {
-      disposable.push(fn)
-    }
+    connection = await MongoClient.connect(replSet.getUri(), {})
+    ;(async () => {
+      let checks = 0
 
-    try {
-      await test(con, onDispose)
-    } finally {
-      disposable.length && (await Promise.all(disposable.map((fn) => swallow(fn))))
-      con && (await swallow(con.close.bind(con)))
-      replSet && (await swallow(replSet.stop.bind(replSet)))
-    }
-  } catch (e) {
-    con && (await swallow(con.close.bind(con)))
-    replSet && (await swallow(replSet.stop.bind(replSet)))
+      for await (const _ of setInterval(2000)) {
+        if (instances === 0 && checks < 3) {
+          checks++
+        } else if (instances === 0 && checks >= 3) {
+          connection && (await swallow(connection.close.bind(connection)))
+          replSet && (await swallow(replSet.stop.bind(replSet)))
+          break
+        } else {
+          checks = 0
+        }
+      }
+    })()
+  }
 
-    throw e
+  const disposable: (() => Promise<void>)[] = []
+  const onDispose = (fn: () => Promise<void>) => {
+    disposable.push(fn)
+  }
+  const db = connection.db(`db_${new ObjectId().toString()}`)
+  instances++
+
+  try {
+    await test(db, connection, onDispose)
+  } finally {
+    await Promise.all(disposable.map((fn) => swallow(fn)))
+    await swallow(() => db.dropDatabase())
+    instances--
   }
 }

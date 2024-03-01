@@ -15,14 +15,12 @@ test(`Outbox consumer should resume from the last processed message`, async () =
     .mockResolvedValueOnce('3')
     .mockRejectedValue(new Error())
 
-  await mongodb(async (client, onDispose) => {
-    const db = client.db('test')
+  await mongodb(async (db, client, onDispose) => {
     const messagesCollection = db.collection(OutboxMessagesCollectionName)
     const consumersCollection = db.collection(OutboxConsumersCollectionName)
     const outbox = OutboxConsumer<MedicineEvent>({
       client,
       db,
-      partitionKey: 'default',
       waitAfterFailedPublishMs: 10,
       shouldDisposeOnSigterm: false,
       publishEvent: publishEventStub,
@@ -42,9 +40,9 @@ test(`Outbox consumer should resume from the last processed message`, async () =
         _id: expect.any(ObjectId),
         lastProcessedId: null,
         resumeToken: null,
-        partitionKey: 'default',
         lastUpdatedAt: null,
         createdAt: expect.any(Date),
+        partitionKey: 'default',
       },
     ])
 
@@ -63,9 +61,9 @@ test(`Outbox consumer should resume from the last processed message`, async () =
         _id: expect.any(ObjectId),
         lastProcessedId: messages[2]._id,
         resumeToken: expect.anything(),
-        partitionKey: 'default',
         lastUpdatedAt: expect.any(Date),
         createdAt: expect.any(Date),
+        partitionKey: 'default',
       },
     ])
 
@@ -79,9 +77,9 @@ test(`Outbox consumer should resume from the last processed message`, async () =
         _id: expect.any(ObjectId),
         lastProcessedId: messages[4]._id,
         resumeToken: expect.anything(),
-        partitionKey: 'default',
         lastUpdatedAt: expect.any(Date),
         createdAt: expect.any(Date),
+        partitionKey: 'default',
       },
     ])
   })

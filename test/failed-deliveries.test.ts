@@ -11,8 +11,7 @@ describe(`When a message publish fails`, () => {
   test('Then the outbox consumer if stopped should remember last processed message', async () => {
     const publishEventStub = jest.fn().mockResolvedValueOnce(undefined).mockRejectedValue(new Error())
 
-    await mongodb(async (client, onDispose) => {
-      const db = client.db('test')
+    await mongodb(async (db, client, onDispose) => {
       const messagesCollection = db.collection(OutboxMessagesCollectionName)
       const consumersCollection = db.collection(OutboxConsumersCollectionName)
       const outbox = OutboxConsumer<MedicineEvent>({
@@ -116,8 +115,7 @@ describe(`When a message publish fails`, () => {
       .mockRejectedValueOnce(new Error())
       .mockResolvedValueOnce('5')
 
-    await mongodb(async (client, onDispose) => {
-      const db = client.db('test')
+    await mongodb(async (db, client, onDispose) => {
       const messagesCollection = db.collection(OutboxMessagesCollectionName)
       const consumersCollection = db.collection(OutboxConsumersCollectionName)
       const outbox = OutboxConsumer<MedicineEvent>({

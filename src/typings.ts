@@ -21,7 +21,7 @@ type OutboxConsumer = {
 type ConsumerCreationParams<Event> = Readonly<{
   client: MongoClient
   db: Db
-  partitionKey: string
+  partitionKey?: string
   waitAfterFailedPublishMs?: number
   shouldDisposeOnSigterm?: boolean // default true
   onError?: (error: Error) => void

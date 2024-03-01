@@ -1,4 +1,4 @@
-import { ClientSession, ObjectId } from 'mongodb'
+import { ClientSession, Db, MongoClient, ObjectId } from 'mongodb'
 import { setTimeout } from 'node:timers/promises'
 import { noop } from 'ts-essentials'
 import { addDisposeOnSigterm } from './addDisposeOnSigterm'
@@ -10,21 +10,32 @@ import { ConsumerCreationParams, OutboxMessage } from './typings'
 import { isNil, swallow } from './utils'
 
 export const OutboxConsumer = <Event>(params: ConsumerCreationParams<Event>) => {
-  const { client, db, partitionKey, publishEvent: _publishEvent } = params
+  const { client, db, publishEvent: _publishEvent } = params
+  const partitionKey = params.partitionKey || 'default'
   const waitAfterFailedPublishMs = params.waitAfterFailedPublishMs || 1000
   const shouldDisposeOnSigterm = isNil(params.shouldDisposeOnSigterm) ? true : !!params.shouldDisposeOnSigterm
   const onError = params.onError || noop
   const messages = db.collection<OutboxMessage<Event>>(OutboxMessagesCollectionName)
-  const addMessage = async (event: Event, partitionKey: string, session?: ClientSession) =>
-    await messages.insertOne(
-      {
-        _id: new ObjectId(),
-        partitionKey,
-        occurredAt: new Date(),
-        data: event,
-      },
-      { session },
-    )
+  const addMessage = async (event: Event | Event[], partitionKey: string, session?: ClientSession) =>
+    Array.isArray(event)
+      ? await messages.insertMany(
+          event.map((data) => ({
+            _id: new ObjectId(),
+            partitionKey,
+            occurredAt: new Date(),
+            data,
+          })),
+          { session },
+        )
+      : await messages.insertOne(
+          {
+            _id: new ObjectId(),
+            partitionKey,
+            occurredAt: new Date(),
+            data: event,
+          },
+          { session },
+        )
 
   return {
     async start() {
@@ -82,24 +93,20 @@ export const OutboxConsumer = <Event>(params: ConsumerCreationParams<Event>) => 
       return stop
     },
 
-    async publishEvent(event: Event, sessionOrCallback?: ClientSession | ((session: ClientSession) => Promise<void>)) {
+    async publishEvent(
+      event: Event | Event[],
+      sessionOrCallback?: ClientSession | ((session: ClientSession, db: Db, client: MongoClient) => Promise<void>),
+    ) {
       if (sessionOrCallback instanceof ClientSession || !sessionOrCallback) {
         await addMessage(event, partitionKey, sessionOrCallback)
       } else {
         await client.withSession(async (session) => {
           await session.withTransaction(async (session) => {
-            await sessionOrCallback(session)
+            await sessionOrCallback(session, db, client)
             await addMessage(event, partitionKey, session)
           })
         })
       }
-    },
-
-    async publishEvents(
-      events: Event[],
-      sessionOrCallback?: ClientSession | ((session: ClientSession) => Promise<void>),
-    ) {
-      //
     },
   }
 }
