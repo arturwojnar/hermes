@@ -24,7 +24,8 @@ type ConsumerCreationParams<Event> = Readonly<{
   partitionKey?: string
   waitAfterFailedPublishMs?: number
   shouldDisposeOnSigterm?: boolean // default true
-  onError?: (error: Error) => void
+  onFailedPublish?: (error: unknown) => void
+  onDbError?: (error: unknown) => void
   publishEvent: (event: Event) => Promise<void> | never
 }>
 

@@ -14,7 +14,8 @@ export const OutboxConsumer = <Event>(params: ConsumerCreationParams<Event>) => 
   const partitionKey = params.partitionKey || 'default'
   const waitAfterFailedPublishMs = params.waitAfterFailedPublishMs || 1000
   const shouldDisposeOnSigterm = isNil(params.shouldDisposeOnSigterm) ? true : !!params.shouldDisposeOnSigterm
-  const onError = params.onError || noop
+  const onDbError = params.onDbError || noop
+  const onFailedPublish = params.onFailedPublish || noop
   const messages = db.collection<OutboxMessage<Event>>(OutboxMessagesCollectionName)
   const addMessage = async (event: Event | Event[], partitionKey: string, session?: ClientSession) =>
     Array.isArray(event)
@@ -52,7 +53,7 @@ export const OutboxConsumer = <Event>(params: ConsumerCreationParams<Event>) => 
             published = true
             break
           } catch (error) {
-            // TODO
+            onFailedPublish(error)
             await setTimeout(waitAfterFailedPublishMs)
             continue
           }
@@ -61,24 +62,27 @@ export const OutboxConsumer = <Event>(params: ConsumerCreationParams<Event>) => 
         return published
       }
       const watch = async () => {
-        while (!watchCursor.closed) {
-          if (await watchCursor.hasNext()) {
-            const { _id: resumeToken, operationType, fullDocument: message, documentKey } = await watchCursor.next()
+        try {
+          while (!watchCursor.closed) {
+            if (await watchCursor.hasNext()) {
+              const { _id: resumeToken, operationType, fullDocument: message, documentKey } = await watchCursor.next()
 
-            if (operationType !== 'insert') {
-              continue
-            }
+              if (operationType !== 'insert') {
+                continue
+              }
 
-            if (await _waitUntilEventIsSent(message.data)) {
-              await consumer.update(documentKey._id, resumeToken)
+              if (await _waitUntilEventIsSent(message.data)) {
+                await consumer.update(documentKey._id, resumeToken)
+              }
             }
           }
+        } catch (error) {
+          onDbError(error)
+          await setTimeout(waitAfterFailedPublishMs)
         }
       }
 
-      watch()
-        .catch(onError)
-        .finally(() => swallow(() => watchCursor.close()))
+      watch().finally(() => swallow(() => watchCursor.close()))
 
       const stop = async function stop() {
         if (!watchCursor.closed) {

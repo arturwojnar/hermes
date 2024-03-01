@@ -9,11 +9,12 @@ let instances = 0
 
 export const mongodb = async (
   test: (db: Db, client: MongoClient, onDispose: (fn: () => Promise<void>) => void) => Promise<void | never>,
+  version = '7.0.5',
 ) => {
   if (!replSet || !connection) {
     replSet = await MongoMemoryReplSet.create({
       replSet: { count: 1, storageEngine: 'wiredTiger' },
-      binary: { version: '7.0.5' },
+      binary: { version },
     })
     connection = await MongoClient.connect(replSet.getUri(), {})
     ;(async () => {
