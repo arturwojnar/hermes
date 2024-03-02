@@ -1,9 +1,9 @@
 import { Collection, ResumeToken } from 'mongodb'
 import { PipelineStage } from 'mongoose'
-import { OutboxMessage, OutboxMessageStream } from './typings'
+import { OutboxMessageModel, OutboxMessageStream } from './typings'
 
 const createChangeStream = <Event>(
-  messages: Collection<OutboxMessage<Event>>,
+  messages: Collection<OutboxMessageModel<Event>>,
   partitionKey: string,
   resumeToken?: ResumeToken,
 ) => {
@@ -15,7 +15,7 @@ const createChangeStream = <Event>(
       },
     },
   ]
-  return messages.watch<OutboxMessage<Event>, OutboxMessageStream<Event>>(pipeline, {
+  return messages.watch<OutboxMessageModel<Event>, OutboxMessageStream<Event>>(pipeline, {
     fullDocument: 'whenAvailable',
     startAfter: resumeToken,
   })

@@ -17,7 +17,7 @@ test('Sending many events at once in order works', async () => {
       client,
       db,
       partitionKey: 'default',
-      publishEvent: publishEventStub,
+      publish: publishEventStub,
       shouldDisposeOnSigterm: false,
     })
     const event1 = generateEvent('med1')
@@ -43,11 +43,11 @@ test('Sending many events at once in order works', async () => {
 
     await client.withSession(async (session) => {
       await session.withTransaction(async (session) => {
-        await outbox.publishEvent(event1, session)
-        await outbox.publishEvent(event2, session)
-        await outbox.publishEvent(event3, session)
-        await outbox.publishEvent(event4, session)
-        await outbox.publishEvent(event5, session)
+        await outbox.publish(event1, session)
+        await outbox.publish(event2, session)
+        await outbox.publish(event3, session)
+        await outbox.publish(event4, session)
+        await outbox.publish(event5, session)
       })
     })
 

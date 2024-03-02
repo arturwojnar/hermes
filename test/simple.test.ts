@@ -16,7 +16,7 @@ test('Sending one event works', async () => {
     const outbox = OutboxConsumer<MedicineEvent>({
       client,
       db,
-      publishEvent: publishEventStub,
+      publish: publishEventStub,
       shouldDisposeOnSigterm: false,
     })
     const event: MedicineAdded = {
@@ -44,7 +44,7 @@ test('Sending one event works', async () => {
 
     await client.withSession(async (session) => {
       await session.withTransaction(async (session) => {
-        await outbox.publishEvent(event, session)
+        await outbox.publish(event, session)
       })
     })
 
@@ -81,7 +81,7 @@ test('Sending many events works', async () => {
     const outbox = OutboxConsumer<MedicineEvent>({
       client,
       db,
-      publishEvent: publishEventStub,
+      publish: publishEventStub,
       shouldDisposeOnSigterm: false,
     })
     const event1: MedicineAdded = {
@@ -114,7 +114,7 @@ test('Sending many events works', async () => {
       },
     ])
 
-    await outbox.publishEvent([event1, event2])
+    await outbox.publish([event1, event2])
 
     await nodeTimersPromises.setTimeout(500)
 
@@ -153,7 +153,7 @@ test('Using a callback works', async () => {
     const outbox = OutboxConsumer<MedicineEvent>({
       client,
       db,
-      publishEvent: publishEventStub,
+      publish: publishEventStub,
       shouldDisposeOnSigterm: false,
     })
     const event: MedicineAdded = {
@@ -167,7 +167,7 @@ test('Using a callback works', async () => {
     const stop = await outbox.start()
     onDispose(stop)
 
-    await outbox.publishEvent(event, async (session, db) => {
+    await outbox.publish(event, async (session, db) => {
       await db.collection('test').insertOne(
         {
           param: 1,
@@ -195,7 +195,7 @@ test('Event is not published when the callback fails', async () => {
     const outbox = OutboxConsumer<MedicineEvent>({
       client,
       db,
-      publishEvent: publishEventStub,
+      publish: publishEventStub,
       shouldDisposeOnSigterm: false,
     })
     const event: MedicineAdded = {
@@ -210,7 +210,7 @@ test('Event is not published when the callback fails', async () => {
     onDispose(stop)
 
     expect(async () => {
-      await outbox.publishEvent(event, async (session, db) => {
+      await outbox.publish(event, async (session, db) => {
         await db.collection('test').insertOne(
           {
             param: 1,

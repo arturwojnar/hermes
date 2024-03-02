@@ -1,10 +1,10 @@
 module.exports = {
   root: true,
   parser: '@typescript-eslint/parser',
-  plugins: ['@typescript-eslint', 'node', 'prettier'],
+  plugins: ['@typescript-eslint', 'node', 'prettier', 'eslint-plugin-tsdoc'],
   parserOptions: {
     tsconfigRootDir: __dirname,
-    // project: ['./tsconfig.json'],
+    project: ['./tsconfig.json'],
   },
   extends: [
     'eslint:recommended',
@@ -15,12 +15,15 @@ module.exports = {
     'plugin:prettier/recommended',
   ],
   rules: {
+    'no-constant-condition': 'off',
+    'tsdoc/syntax': 'off',
     'prettier/prettier': 'warn',
     'node/no-missing-import': 'off',
     'node/no-empty-function': 'off',
     'node/no-unsupported-features/es-syntax': 'off',
     'node/no-missing-require': 'off',
     'node/shebang': 'off',
+    '@typescript-eslint/no-redundant-type-constituents': 'off',
     '@typescript-eslint/no-use-before-define': 'off',
     quotes: ['warn', 'single', { avoidEscape: true }],
     'node/no-unpublished-import': 'off',

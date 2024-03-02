@@ -28,7 +28,7 @@ type MedicineEvent = MedicineAdded | MedicineRemoved
     client,
     db,
     partitionKey: 'default',
-    publishEvent: async (event) => {
+    publish: async () => {
       await setTimeout(100)
       throw new Error('...')
     },

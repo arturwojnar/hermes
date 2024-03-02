@@ -17,14 +17,14 @@ test('Sending many events at once in order works', async () => {
       client,
       db,
       partitionKey: 'tenant-1',
-      publishEvent: publishEventStub,
+      publish: publishEventStub,
       shouldDisposeOnSigterm: false,
     })
     const outbox2 = OutboxConsumer<MedicineEvent>({
       client,
       db,
       partitionKey: 'tenant-2',
-      publishEvent: publishEventStub,
+      publish: publishEventStub,
       shouldDisposeOnSigterm: false,
     })
     const event1 = generateEvent('med1')
@@ -56,11 +56,11 @@ test('Sending many events at once in order works', async () => {
       },
     ])
 
-    await outbox1.publishEvent(event1)
-    await outbox2.publishEvent(event2)
-    await outbox1.publishEvent(event3)
-    await outbox2.publishEvent(event4)
-    await outbox1.publishEvent(event5)
+    await outbox1.publish(event1)
+    await outbox2.publish(event2)
+    await outbox1.publish(event3)
+    await outbox2.publish(event4)
+    await outbox1.publish(event5)
 
     await nodeTimersPromises.setTimeout(500)
 

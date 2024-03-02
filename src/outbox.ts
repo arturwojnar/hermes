@@ -6,17 +6,25 @@ import { OutboxMessagesCollectionName } from './consts'
 import { createChangeStream } from './createChangeStream'
 import { ensureIndexes } from './ensureIndexes'
 import { getConsumer } from './getConsumer'
-import { ConsumerCreationParams, OutboxMessage } from './typings'
+import { ConsumerCreationParams, OutboxConsumerType, OutboxMessageModel } from './typings'
 import { isNil, swallow } from './utils'
 
-export const OutboxConsumer = <Event>(params: ConsumerCreationParams<Event>) => {
-  const { client, db, publishEvent: _publishEvent } = params
+/**
+ * OutboxConsumer is rensposible for consuming events from one partition (`partitionKey` option)
+ * and publishing it through an `publishEvent` callback.
+ *
+ * @template Event - Events handled by the `OutboxConsumer`.
+ * @param params - `OutboxConsumer` configuration.
+ * @returns An `OutboxConsumer` instance.
+ */
+export const OutboxConsumer = <Event>(params: ConsumerCreationParams<Event>): OutboxConsumerType<Event> => {
+  const { client, db, publish: _publish } = params
   const partitionKey = params.partitionKey || 'default'
   const waitAfterFailedPublishMs = params.waitAfterFailedPublishMs || 1000
   const shouldDisposeOnSigterm = isNil(params.shouldDisposeOnSigterm) ? true : !!params.shouldDisposeOnSigterm
   const onDbError = params.onDbError || noop
   const onFailedPublish = params.onFailedPublish || noop
-  const messages = db.collection<OutboxMessage<Event>>(OutboxMessagesCollectionName)
+  const messages = db.collection<OutboxMessageModel<Event>>(OutboxMessagesCollectionName)
   const addMessage = async (event: Event | Event[], partitionKey: string, session?: ClientSession) =>
     Array.isArray(event)
       ? await messages.insertMany(
@@ -49,7 +57,7 @@ export const OutboxConsumer = <Event>(params: ConsumerCreationParams<Event>) => 
 
         while (!watchCursor.closed) {
           try {
-            await _publishEvent(event)
+            await _publish(event)
             published = true
             break
           } catch (error) {
@@ -62,8 +70,8 @@ export const OutboxConsumer = <Event>(params: ConsumerCreationParams<Event>) => 
         return published
       }
       const watch = async () => {
-        try {
-          while (!watchCursor.closed) {
+        while (!watchCursor.closed) {
+          try {
             if (await watchCursor.hasNext()) {
               const { _id: resumeToken, operationType, fullDocument: message, documentKey } = await watchCursor.next()
 
@@ -75,14 +83,16 @@ export const OutboxConsumer = <Event>(params: ConsumerCreationParams<Event>) => 
                 await consumer.update(documentKey._id, resumeToken)
               }
             }
+          } catch (error) {
+            onDbError(error)
+            await setTimeout(waitAfterFailedPublishMs)
           }
-        } catch (error) {
-          onDbError(error)
-          await setTimeout(waitAfterFailedPublishMs)
         }
       }
 
-      watch().finally(() => swallow(() => watchCursor.close()))
+      watch()
+        .catch(console.error)
+        .finally(() => swallow(() => watchCursor.close()))
 
       const stop = async function stop() {
         if (!watchCursor.closed) {
@@ -97,7 +107,7 @@ export const OutboxConsumer = <Event>(params: ConsumerCreationParams<Event>) => 
       return stop
     },
 
-    async publishEvent(
+    async publish(
       event: Event | Event[],
       sessionOrCallback?: ClientSession | ((session: ClientSession, db: Db, client: MongoClient) => Promise<void>),
     ) {

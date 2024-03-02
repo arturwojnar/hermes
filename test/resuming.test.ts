@@ -23,7 +23,7 @@ test(`Outbox consumer should resume from the last processed message`, async () =
       db,
       waitAfterFailedPublishMs: 10,
       shouldDisposeOnSigterm: false,
-      publishEvent: publishEventStub,
+      publish: publishEventStub,
     })
     const event1 = generateEvent('med1')
     const event2 = generateEvent('med2')
@@ -46,11 +46,11 @@ test(`Outbox consumer should resume from the last processed message`, async () =
       },
     ])
 
-    await outbox.publishEvent(event1)
-    await outbox.publishEvent(event2)
-    await outbox.publishEvent(event3)
-    await outbox.publishEvent(event4)
-    await outbox.publishEvent(event5)
+    await outbox.publish(event1)
+    await outbox.publish(event2)
+    await outbox.publish(event3)
+    await outbox.publish(event4)
+    await outbox.publish(event5)
 
     await nodeTimersPromises.setTimeout(500)
     await stop1()

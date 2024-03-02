@@ -20,7 +20,7 @@ describe(`When a message publish fails`, () => {
         partitionKey: 'default',
         waitAfterFailedPublishMs: 10,
         shouldDisposeOnSigterm: false,
-        publishEvent: publishEventStub,
+        publish: publishEventStub,
       })
       const event1 = generateEvent('med1')
       const event2 = generateEvent('med2')
@@ -45,11 +45,11 @@ describe(`When a message publish fails`, () => {
 
       await client.withSession(async (session) => {
         await session.withTransaction(async (session) => {
-          await outbox.publishEvent(event1, session)
-          await outbox.publishEvent(event2, session)
-          await outbox.publishEvent(event3, session)
-          await outbox.publishEvent(event4, session)
-          await outbox.publishEvent(event5, session)
+          await outbox.publish(event1, session)
+          await outbox.publish(event2, session)
+          await outbox.publish(event3, session)
+          await outbox.publish(event4, session)
+          await outbox.publish(event5, session)
         })
       })
 
@@ -124,7 +124,7 @@ describe(`When a message publish fails`, () => {
         partitionKey: 'default',
         waitAfterFailedPublishMs: 10,
         shouldDisposeOnSigterm: false,
-        publishEvent: publishEventStub,
+        publish: publishEventStub,
       })
       const event1 = generateEvent('med1')
       const event2 = generateEvent('med2')
@@ -149,11 +149,11 @@ describe(`When a message publish fails`, () => {
 
       await client.withSession(async (session) => {
         await session.withTransaction(async (session) => {
-          await outbox.publishEvent(event1, session)
-          await outbox.publishEvent(event2, session)
-          await outbox.publishEvent(event3, session)
-          await outbox.publishEvent(event4, session)
-          await outbox.publishEvent(event5, session)
+          await outbox.publish(event1, session)
+          await outbox.publish(event2, session)
+          await outbox.publish(event3, session)
+          await outbox.publish(event4, session)
+          await outbox.publish(event5, session)
         })
       })
 

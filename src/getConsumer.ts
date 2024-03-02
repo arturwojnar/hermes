@@ -1,7 +1,7 @@
 import assert from 'assert'
 import { Db, Document, ObjectId } from 'mongodb'
 import { OutboxConsumersCollectionName } from './consts'
-import { OutboxConsumer } from './typings'
+import { OutboxConsumerModel } from './typings'
 
 type ConsumerActiveRecord<T extends Document, K extends keyof T = keyof T> = {
   [key in K]: T[key]
@@ -9,8 +9,8 @@ type ConsumerActiveRecord<T extends Document, K extends keyof T = keyof T> = {
   update(lastProcessedId: ObjectId, resumeToken: unknown): Promise<void | never>
 }
 
-const getConsumer = async (db: Db, partitionKey: string): Promise<ConsumerActiveRecord<OutboxConsumer>> => {
-  const consumers = db.collection<OutboxConsumer>(OutboxConsumersCollectionName)
+const getConsumer = async (db: Db, partitionKey: string): Promise<ConsumerActiveRecord<OutboxConsumerModel>> => {
+  const consumers = db.collection<OutboxConsumerModel>(OutboxConsumersCollectionName)
   let consumer = await consumers.findOne({ partitionKey })
 
   if (!consumer) {
