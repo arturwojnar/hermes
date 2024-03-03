@@ -51,7 +51,7 @@ test('Sending many events at once in order works', async () => {
       })
     })
 
-    await nodeTimersPromises.setTimeout(500)
+    await nodeTimersPromises.setTimeout(200)
 
     const messages = await messagesCollection.find().toArray()
     expect(messages).toEqual([

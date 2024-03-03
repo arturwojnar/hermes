@@ -1,4 +1,5 @@
 import { ChangeStreamInsertDocument, ClientSession, Db, MongoClient, ObjectId, ResumeToken } from 'mongodb'
+import { AsyncOrSync } from 'ts-essentials'
 
 type OutboxMessageModel<Event> = {
   _id: ObjectId
@@ -129,7 +130,7 @@ type ErrorCallback = (error: unknown) => void
 type ConsumerCreationParams<Event> = {
   client: MongoClient
   db: Db
-  publish: (event: Event) => Promise<void> | never
+  publish: (event: Event) => AsyncOrSync<void> | never
   /**
    * @defaultValue `default`
    */

@@ -7,19 +7,21 @@
     {
       "console": "integratedTerminal",
       "internalConsoleOptions": "neverOpen",
-      "name": "Test",
-      "program": "${workspaceFolder}/example.ts",
+      "name": "rabbitmq-one-partition-semaphore",
+      "program": "${workspaceFolder}/examples/lib/examples/rabbitmq-one-partition-semaphore.js",
       "request": "launch",
       "restart": true,
       "runtimeExecutable": "${workspaceFolder}/node_modules/.bin/nodemon",
+
       "skipFiles": ["<node_internals>/**"],
-      "type": "pwa-node",
+      "type": "node",
       "outputCapture": "std"
     },
     {
       "args": [
         "-c",
         "${workspaceFolder}/jest.config.js",
+        "--maxConcurrency=1",
         "--detectOpenHandles",
         "--colors",
         "--verbose"
@@ -30,7 +32,7 @@
       "program": "${workspaceRoot}/node_modules/.bin/jest",
       "request": "launch",
       "skipFiles": ["<node_internals>/**"],
-      "type": "pwa-node"
+      "type": "node"
     }
   ]
 }

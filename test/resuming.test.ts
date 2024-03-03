@@ -52,7 +52,7 @@ test(`Outbox consumer should resume from the last processed message`, async () =
     await outbox.publish(event4)
     await outbox.publish(event5)
 
-    await nodeTimersPromises.setTimeout(500)
+    await nodeTimersPromises.setTimeout(200)
     await stop1()
 
     const messages = await messagesCollection.find().toArray()
@@ -67,11 +67,13 @@ test(`Outbox consumer should resume from the last processed message`, async () =
       },
     ])
 
-    publishEventStub.mockReset()
+    publishEventStub.mockClear()
+    publishEventStub.mockResolvedValue(undefined)
     const stop2 = await outbox.start()
     onDispose(stop2)
 
-    await nodeTimersPromises.setTimeout(500)
+    await nodeTimersPromises.setTimeout(200)
+
     expect(await consumersCollection.find().toArray()).toEqual([
       {
         _id: expect.any(ObjectId),

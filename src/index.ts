@@ -1,3 +1,5 @@
+export { addDisposeOnSigterm } from './addDisposeOnSigterm'
+export { OutboxConsumersCollectionName, OutboxMessagesCollectionName } from './consts'
 export { OutboxConsumer } from './outbox'
 export {
   ConsumerCreationParams,

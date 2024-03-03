@@ -1,5 +1,6 @@
 {
   "javascript.updateImportsOnFileMove.enabled": "always",
+  "javascript.suggestionActions.enabled": false,
   "search.exclude": {
       "**/.git": true,
       "**/.svn": true,

@@ -25,13 +25,13 @@
   "scripts": {
     "build": "tsc --project tsconfig.build.json",
     "clean": "rm -rf ./lib/",
-    "cm": "cz",
     "lint": "eslint -f unix \"src/**/*.{ts,tsx}\"",
     "lint-fix": "eslint --fix -f unix \"src/**/*.{ts,tsx}\"",
     "prepare": "husky install",
     "semantic-release": "semantic-release",
     "test": "jest --colors --coverage --verbose --maxConcurrency=15",
-    "typecheck": "tsc --noEmit"
+    "typecheck": "tsc --noEmit",
+    "typedoc": "typedoc"
   },
   "author": {
     "name": "Artur Wojnar",
@@ -41,39 +41,39 @@
   "devDependencies": {
     "@commitlint/cli": "~18.6.1",
     "@commitlint/config-conventional": "~18.6.2",
-    "@microsoft/tsdoc": "^0.14.2",
-    "@microsoft/tsdoc-config": "^0.16.2",
+    "@microsoft/tsdoc": "~0.14.2",
+    "@microsoft/tsdoc-config": "~0.16.2",
     "@semantic-release/changelog": "~6.0.3",
     "@semantic-release/git": "~10.0.1",
     "@types/jest": "~29.5.12",
     "@types/node": "~20.11.20",
-    "@types/sinon": "^17.0.3",
+    "@types/sinon": "~17.0.3",
     "@typescript-eslint/eslint-plugin": "~7.0.2",
     "@typescript-eslint/parser": "~7.0.2",
-    "ajv": "^8.12.0",
+    "ajv": "~8.12.0",
     "conventional-changelog-conventionalcommits": "~7.0.2",
     "eslint": "~8.57.0",
     "eslint-config-prettier": "~9.1.0",
     "eslint-plugin-node": "~11.1.0",
     "eslint-plugin-prettier": "~5.1.3",
-    "eslint-plugin-tsdoc": "^0.2.17",
+    "eslint-plugin-tsdoc": "~0.2.17",
     "husky": "~9.0.11",
-    "jest": "^29.7.0",
+    "jest": "~29.7.0",
     "lint-staged": "~15.2.2",
-    "mongodb-memory-server": "^9.1.6",
+    "mongodb-memory-server": "~9.1.6",
     "mongoose": "~8.2.0",
-    "nodemon": "^3.1.0",
+    "nodemon": "~3.1.0",
     "prettier": "~3.2.5",
     "prettier-eslint": "~16.3.0",
     "semantic-release": "~23.0.2",
-    "sinon": "^17.0.1",
+    "sinon": "~17.0.1",
     "ts-essentials": "~9.4.1",
-    "ts-jest": "^29.1.2",
+    "ts-jest": "~29.1.2",
     "ts-node": "~10.9.2",
-    "typedoc": "^0.25.9",
+    "typedoc": "~0.25.9",
     "typescript": "~5.3.3"
   },
   "dependencies": {
-    "mongodb": "~6.3.0"
+    "mongodb": "~6.4.0"
   }
 }

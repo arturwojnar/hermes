@@ -1,0 +1,21 @@
+{
+  "name": "no-scaling",
+  "version": "1.0.0",
+  "description": "Example for no-scaling option",
+  "main": "lib/index.js",
+  "author": "",
+  "license": "ISC",
+  "scripts": {
+    "build": "tsc"
+  },
+  "devDependencies": {
+    "@types/amqplib": "~0.10.5",
+    "@types/node": "~20.11.20",
+    "ts-node": "~10.9.2",
+    "typescript": "~5.3.3"
+  },
+  "dependencies": {
+    "amqplib": "~0.10.3",
+    "mongodb": "~6.4.0"
+  }
+}

@@ -68,9 +68,8 @@
     "skipLibCheck": true,                           /* Skip type checking of declaration files. */
     "forceConsistentCasingInFileNames": true,       /* Disallow inconsistently-cased references to the same file. */
     "paths": {
-      "@outbox/*": ["./src/*"],
-      "@examples/*": ["./examples/*"]
+      "@outbox": ["../src/index.js"],
     }
   },
-  "include": ["src/**/*.ts", "test/**/*.ts"],
+  "include": ["*.ts"]
 }

@@ -1,6 +1,7 @@
 import { ClientSession, Db, MongoClient, ObjectId } from 'mongodb'
 import { setTimeout } from 'node:timers/promises'
 import { noop } from 'ts-essentials'
+import { CancellationPromise } from './CancellablePromise'
 import { addDisposeOnSigterm } from './addDisposeOnSigterm'
 import { OutboxMessagesCollectionName } from './consts'
 import { createChangeStream } from './createChangeStream'
@@ -45,10 +46,14 @@ export const OutboxConsumer = <Event>(params: ConsumerCreationParams<Event>): Ou
           },
           { session },
         )
+  let shouldStopPromise: CancellationPromise<unknown> | undefined = undefined
 
   return {
     async start() {
       await ensureIndexes(db)
+
+      await shouldStopPromise
+      shouldStopPromise = new CancellationPromise()
 
       const consumer = await getConsumer(db, partitionKey)
       const watchCursor = createChangeStream<Event>(messages, partitionKey, consumer.resumeToken)
@@ -57,7 +62,22 @@ export const OutboxConsumer = <Event>(params: ConsumerCreationParams<Event>): Ou
 
         while (!watchCursor.closed) {
           try {
-            await _publish(event)
+            const promise = new CancellationPromise()
+            const result = _publish(event, (error) => {
+              if (error) {
+                promise.reject(error)
+              } else {
+                promise.resolve(undefined)
+              }
+            })
+
+            if (result?.then) {
+              await result
+            } else {
+              await promise
+            }
+            // await _publish(event, noop)
+
             published = true
             break
           } catch (error) {
@@ -72,7 +92,12 @@ export const OutboxConsumer = <Event>(params: ConsumerCreationParams<Event>): Ou
       const watch = async () => {
         while (!watchCursor.closed) {
           try {
-            if (await watchCursor.hasNext()) {
+            const result = await Promise.race([shouldStopPromise, watchCursor.hasNext()])
+            if (result === null) {
+              await watchCursor.close()
+              break
+            }
+            if (result) {
               const { _id: resumeToken, operationType, fullDocument: message, documentKey } = await watchCursor.next()
 
               if (operationType !== 'insert') {
@@ -96,6 +121,7 @@ export const OutboxConsumer = <Event>(params: ConsumerCreationParams<Event>): Ou
 
       const stop = async function stop() {
         if (!watchCursor.closed) {
+          shouldStopPromise && shouldStopPromise.resolve(null)
           await watchCursor.close()
         }
       }

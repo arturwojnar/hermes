@@ -48,7 +48,7 @@ test('Sending one event works', async () => {
       })
     })
 
-    await nodeTimersPromises.setTimeout(500)
+    await nodeTimersPromises.setTimeout(200)
 
     const messages = await messagesCollection.find().toArray()
     expect(messages).toEqual([
@@ -116,7 +116,7 @@ test('Sending many events works', async () => {
 
     await outbox.publish([event1, event2])
 
-    await nodeTimersPromises.setTimeout(500)
+    await nodeTimersPromises.setTimeout(200)
 
     const messages = await messagesCollection.find().toArray()
     expect(messages).toEqual([
@@ -176,7 +176,7 @@ test('Using a callback works', async () => {
       )
     })
 
-    await nodeTimersPromises.setTimeout(500)
+    await nodeTimersPromises.setTimeout(200)
 
     expect(await db.collection('test').find().toArray()).toEqual([
       {
@@ -221,7 +221,7 @@ test('Event is not published when the callback fails', async () => {
       })
     }).rejects.toThrow()
 
-    await nodeTimersPromises.setTimeout(500)
+    await nodeTimersPromises.setTimeout(200)
 
     expect(await db.collection('test').find().toArray()).toEqual([])
     expect(await consumersCollection.find().toArray()).toEqual([
