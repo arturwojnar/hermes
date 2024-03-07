@@ -1,9 +1,12 @@
 // import { OutboxConsumer, addDisposeOnSigterm } from '@outbox'
+// import { addDisposeOnSigterm } from '@arturwojnar/hermes'
+import { addDisposeOnSigterm } from '../packages/hermes/src/index'
+// import { createOutboxConsumer } from '@arturwojnar/hermes-mongodb'
 import amqp from 'amqplib'
 import assert from 'assert'
 import { MongoClient, ObjectId } from 'mongodb'
 import { setTimeout } from 'node:timers/promises'
-import { OutboxConsumer, addDisposeOnSigterm } from '../src/index.js'
+import { createOutboxConsumer } from '../packages/hermes-mongodb/src/index'
 
 type DomainEvent<Name extends string, Data> = Readonly<{
   name: Name
@@ -71,7 +74,7 @@ const start = async () => {
 
     await client.connect()
 
-    const outbox = OutboxConsumer<MedicineEvent>({
+    const outbox = createOutboxConsumer<MedicineEvent>({
       client,
       db,
       publish: async (event) => {

@@ -1,14 +1,14 @@
 {
-  "name": "ts-outbox",
+  "name": "hermes",
   "version": "0.0.0-development.0",
-  "description": "Reliable implementation of outbox pattern in TypeScript",
+  "description": "Production-Ready TypeScript Outbox Pattern",
   "main": "lib/index.js",
   "files": [
     "lib/**/*"
   ],
   "types": "lib/index.d.ts",
   "engines": {
-    "node": ">=18.0.0"
+    "node": ">=20.9.0"
   },
   "publishConfig": {
     "registry": "https://npm.pkg.github.com/",
@@ -16,22 +16,26 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/arturwojnar/ts-outbox.git"
+    "url": "git+https://github.com/arturwojnar/hermes.git"
   },
   "bugs": {
-    "url": "https://github.com/ryansonshine/arturwojnar/ts-outbox/issues"
+    "url": "https://github.com/ryansonshine/arturwojnar/hermes/issues"
   },
-  "homepage": "https://github.com/ryansonshine/arturwojnar/ts-outbox#readme",
+  "homepage": "https://github.com/ryansonshine/arturwojnar/hermes#readme",
   "scripts": {
-    "build": "tsc --project tsconfig.build.json",
-    "clean": "rm -rf ./lib/",
-    "lint": "eslint -f unix \"src/**/*.{ts,tsx}\"",
-    "lint-fix": "eslint --fix -f unix \"src/**/*.{ts,tsx}\"",
     "prepare": "husky install",
-    "semantic-release": "semantic-release",
-    "test": "jest --colors --coverage --verbose --maxConcurrency=15",
-    "typecheck": "tsc --noEmit",
-    "typedoc": "typedoc"
+    "build": "npm run build:ts && npm run build --ws",
+    "build:ts": "tsc -b",
+    "test": "npm run test --ws",
+    "lint": "npm run lint:eslint && npm run lint:prettier",
+    "lint:prettier": "prettier --check \"**/**/!(*.d).{ts,json,md}\"",
+    "lint:eslint": "eslint '**/*.ts'",
+    "lint:fix": "eslint packages/**/*.{ts,tsx} --fix",
+    "fix:prettier": "prettier --write \"**/**/!(*.d).{ts,json,md}\"",
+    "typedoc": "npm run typedoc --ws",
+    "docs:dev": "vitepress dev docs",
+    "docs:build": "vitepress build docs",
+    "docs:preview": "vitepress preview docs"
   },
   "author": {
     "name": "Artur Wojnar",
@@ -39,17 +43,17 @@
   },
   "license": "MIT",
   "devDependencies": {
-    "@commitlint/cli": "~18.6.1",
-    "@commitlint/config-conventional": "~18.6.2",
+    "@commitlint/cli": "~19.2.0",
+    "@commitlint/config-conventional": "~19.1.0",
     "@microsoft/tsdoc": "~0.14.2",
     "@microsoft/tsdoc-config": "~0.16.2",
     "@semantic-release/changelog": "~6.0.3",
     "@semantic-release/git": "~10.0.1",
     "@types/jest": "~29.5.12",
-    "@types/node": "~20.11.20",
+    "@types/node": "~20.11.29",
     "@types/sinon": "~17.0.3",
-    "@typescript-eslint/eslint-plugin": "~7.0.2",
-    "@typescript-eslint/parser": "~7.0.2",
+    "@typescript-eslint/eslint-plugin": "~7.3.0",
+    "@typescript-eslint/parser": "~7.3.0",
     "ajv": "~8.12.0",
     "conventional-changelog-conventionalcommits": "~7.0.2",
     "eslint": "~8.57.0",
@@ -60,20 +64,25 @@
     "husky": "~9.0.11",
     "jest": "~29.7.0",
     "lint-staged": "~15.2.2",
-    "mongodb-memory-server": "~9.1.6",
-    "mongoose": "~8.2.0",
     "nodemon": "~3.1.0",
     "prettier": "~3.2.5",
     "prettier-eslint": "~16.3.0",
-    "semantic-release": "~23.0.2",
-    "sinon": "~17.0.1",
+    "semantic-release": "~23.0.5",
     "ts-essentials": "~9.4.1",
     "ts-jest": "~29.1.2",
     "ts-node": "~10.9.2",
-    "typedoc": "~0.25.9",
-    "typescript": "~5.3.3"
+    "tsc-alias": "~1.8.8",
+    "typedoc": "~0.25.12",
+    "typedoc-plugin-markdown": "~3.17.1",
+    "typescript": "~5.4.2",
+    "vitepress": "~1.0.0-rc.45"
   },
+  "private": true,
+  "workspaces": [
+    "packages/hermes",
+    "packages/hermes-mongodb"
+  ],
   "dependencies": {
-    "mongodb": "~6.4.0"
+    "tsconfig-paths": "~4.2.0"
   }
 }

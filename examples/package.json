@@ -11,11 +11,15 @@
   "devDependencies": {
     "@types/amqplib": "~0.10.5",
     "@types/node": "~20.11.20",
+    "nodemon": "^3.1.0",
     "ts-node": "~10.9.2",
-    "typescript": "~5.3.3"
+    "tsconfig-paths": "^4.2.0",
+    "typescript": "~5.3.3",
+    "typescript-transform-paths": "^3.4.7"
   },
   "dependencies": {
     "amqplib": "~0.10.3",
-    "mongodb": "~6.4.0"
+    "mongodb": "~6.4.0",
+    "pulsar-client": "~1.10.0"
   }
 }

@@ -12,7 +12,4 @@ module.exports = {
   testMatch: ['**/test/*.test.ts'],
   testEnvironment: 'node',
   testTimeout: 20000,
-  moduleNameMapper: {
-    '@outbox/(.*)': '<rootDir>/src/$1',
-  },
 }

@@ -37,4 +37,9 @@ module.exports = {
     quotes: 'off',
     semi: [2, 'never'],
   },
+  settings: {
+    'import/resolver': {
+      typescript: {},
+    },
+  },
 }

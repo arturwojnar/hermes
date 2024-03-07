@@ -131,3 +131,9 @@ dist
 
 # build
 lib/
+
+docs/.vitepress/cache
+docs/.vitepress/dist
+docs/hermes-mongodb
+docs/public/hermes-mongodb
+# cache/

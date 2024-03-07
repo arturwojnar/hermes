@@ -1,0 +1,21 @@
+{
+  "extends": "../../tsconfig.common.json",
+  "include": ["./src/**/*"],
+  "compilerOptions": {
+    "baseUrl": ".",
+    "noEmit": false,
+    "composite": true,
+    "declaration": true,
+    "outDir": "./lib",
+    "rootDir": "./src",
+    "paths": {
+      "@arturwojnar/hermes": ["../hermes"],
+      "@arturwojnar/hermes-mongodb": ["./"]
+    }
+  },
+  "references": [
+    {
+      "path": "../hermes/"
+    }
+  ]
+}

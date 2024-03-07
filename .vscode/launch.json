@@ -8,10 +8,24 @@
       "console": "integratedTerminal",
       "internalConsoleOptions": "neverOpen",
       "name": "rabbitmq-one-partition-semaphore",
-      "program": "${workspaceFolder}/examples/lib/examples/rabbitmq-one-partition-semaphore.js",
+      "program": "${workspaceFolder}/examples/rabbitmq-one-partition-semaphore.ts",
       "request": "launch",
       "restart": true,
-      "runtimeExecutable": "${workspaceFolder}/node_modules/.bin/nodemon",
+      "runtimeExecutable": "${workspaceFolder}/examples/node_modules/.bin/nodemon",
+
+      "skipFiles": ["<node_internals>/**"],
+      "type": "node",
+      "outputCapture": "std"
+    },
+    {
+      "console": "integratedTerminal",
+      "internalConsoleOptions": "neverOpen",
+      "name": "pulsar-one-partition-mutex",
+      "preLaunchTask": "npm: build",
+      "program": "${workspaceFolder}/examples/pulsar-one-partition-mutex.ts",
+      "request": "launch",
+      "restart": true,
+      "runtimeExecutable": "${workspaceFolder}/examples/node_modules/.bin/nodemon",
 
       "skipFiles": ["<node_internals>/**"],
       "type": "node",

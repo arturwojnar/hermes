@@ -1,0 +1,16 @@
+{
+  // Comments are supported, like tsconfig.json
+  "name": "Hermes MongoDB",
+  "readme": "none",
+  "entryPoints": ["src/index.ts"],
+  "customCss": "typedoc.css",
+  "navigationLinks": {
+    "Hermes": "/"
+  },
+  "sidebarLinks": {
+    "Hermes": "/"
+  },
+  "titleLink": "/",
+  // "plugin": ["typedoc-plugin-markdown"],
+  "out": "../../docs/public/hermes-mongodb"
+}
