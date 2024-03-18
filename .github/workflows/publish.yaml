@@ -1,10 +1,6 @@
 name: Publish to NPM
 on: [workflow_dispatch]
 
-defaults:
-  run:
-    working-directory: src
-
 jobs:
   build:
     runs-on: ubuntu-latest
@@ -16,9 +12,9 @@ jobs:
         uses: actions/setup-node@v4
         with:
           registry-url: "https://registry.npmjs.org"
-          node-version-file: ./src/.nvmrc
+          node-version-file: ./.nvmrc
           cache: "npm"
-          cache-dependency-path: "./src/package-lock.json"
+          cache-dependency-path: "./package-lock.json"
 
       - name: Install dependencies
         run: npm ci

@@ -1,10 +1,14 @@
 const { pathsToModuleNameMapper } = require('ts-jest')
 const { compilerOptions } = require('./tsconfig')
 module.exports = {
-  globals: {
-    'ts-jest': {
-      tsconfig: 'tsconfig.json',
-    },
+  transform: {
+    '^.+\\.{ts|tsx}?$': [
+      'ts-jest',
+      {
+        babel: true,
+        tsConfig: 'tsconfig.json',
+      },
+    ],
   },
   moduleFileExtensions: ['ts', 'js'],
   transform: {
