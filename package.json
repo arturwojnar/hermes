@@ -16,7 +16,7 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/arturwojnar/hermes.git"
+    "url": "git@github.com:arturwojnar/hermes.git"
   },
   "bugs": {
     "url": "https://github.com/ryansonshine/arturwojnar/hermes/issues"
