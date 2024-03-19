@@ -1,6 +1,6 @@
 {
   "name": "hermes",
-  "version": "0.0.0-development.0",
+  "version": "1.0.0",
   "description": "Production-Ready TypeScript Outbox Pattern",
   "main": "lib/index.js",
   "files": [
