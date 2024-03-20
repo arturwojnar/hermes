@@ -1,10 +1,13 @@
+/* eslint-env node */
 module.exports = {
   root: true,
   parser: '@typescript-eslint/parser',
   plugins: ['@typescript-eslint', 'node', 'prettier', 'eslint-plugin-tsdoc'],
   parserOptions: {
+    ecmaVersion: 2022,
     tsconfigRootDir: __dirname,
-    project: ['./tsconfig.json'],
+    project: ['./tsconfig.json', './packages/*/tsconfig.json'],
+    // tsconfigRootDir: import.meta.dirname,
   },
   ignorePatterns: ['examples/**/*'],
   extends: [

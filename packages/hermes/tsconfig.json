@@ -1,5 +1,5 @@
 {
-  "extends": "../../tsconfig.common.json",
+  "extends": "../../tsconfig.eslint.json",
   "include": ["./src/**/*"],
   "compilerOptions": {
     "baseUrl": ".",

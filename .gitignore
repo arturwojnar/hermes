@@ -137,3 +137,4 @@ docs/.vitepress/dist
 docs/hermes-mongodb
 docs/public/hermes-mongodb
 # cache/
+coverage/

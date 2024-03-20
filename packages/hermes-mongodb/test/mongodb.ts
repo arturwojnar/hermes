@@ -20,6 +20,7 @@ export const mongodb = async (
     ;(async () => {
       let checks = 0
 
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
       for await (const _ of setInterval(2000)) {
         if (instances === 0 && checks < 3) {
           checks++
@@ -31,7 +32,7 @@ export const mongodb = async (
           checks = 0
         }
       }
-    })()
+    })().catch(console.error)
   }
 
   const disposable: (() => Promise<void>)[] = []

@@ -17,6 +17,4 @@ lib/*
 !.eslintrc.js
 
 e2e/*
-
-# packages/hermes/src/*
-# packages/hermes-mongodb/src/*
+coverage/*

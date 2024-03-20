@@ -113,7 +113,7 @@ export const createOutboxConsumer = <Event>(params: ConsumerCreationParams<Event
 
       const stop = async function stop() {
         if (!watchCursor.closed) {
-          shouldStopPromise && shouldStopPromise.resolve(null)
+          shouldStopPromise.resolve(null)
           await watchCursor.close()
         }
       }
