@@ -7,7 +7,7 @@
     "composite": true,
     "declaration": true,
     "outDir": "./lib",
-    "rootDir": "./src",
+    "rootDirs": ["./src", "./test"],
     "paths": {
       "@arturwojnar/hermes": ["../hermes"],
       "@arturwojnar/hermes-mongodb": ["./"]
