@@ -8,10 +8,26 @@ You've written your service that utilizes `Hermes`🌿 and now you want to deplo
 
 It's the issue of accessing the same resource by multiple processes or resource synchronization. One of the solutions is [a mutex (binary variation of a semaphore)](<https://en.wikipedia.org/wiki/Lock_(computer_science)#:~:text=In%20computer%20science%2C%20a%20lock,threads%20of%20execution%20at%20once>).
 
-We can use Apache Pulsar and an Exclusive subscription.
+## Mutex based on an Exclusive topic
 
-<<< @/../examples/pulsar-mutex.ts
+We can use Apache Pulsar and an Exclusive subscription to simulate a mutex behaviour.
+
+<<< @/../examples/pulsar/pulsar-mutex.ts
+
+## Defining some events
+
+<<< @/../examples/events.ts
 
 ## One partition example
 
-<<< @/../examples/pulsar-one-partition-mutex.ts
+First, define a function that will continously send events based on `Hermes` instance:
+
+<<< @/../examples/pulsar/do-publishing.ts
+
+Secondly, we want to know whether the events are actually sent to the Pulsar:
+
+<<< @/../examples/pulsar/do-receiving.ts
+
+And the final wrap-up:
+
+<<< @/../examples/pulsar/pulsar-one-partition-mutex.ts

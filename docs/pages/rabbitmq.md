@@ -1,3 +1,5 @@
+Under development 🛠️🔧🏗️👷🏼‍♂️
+
 <<< @/../examples/rabbitmq-one-partition-semaphore.ts
 
 <!-- The type is a simple wrapper to ensure the structure's correctness. It defines:
