@@ -1,5 +1,5 @@
-import { ChangeStreamInsertDocument, ClientSession, Db, MongoClient, ObjectId, ResumeToken } from 'mongodb'
-import { AsyncOrSync } from 'ts-essentials'
+import { ClientSession, Db, MongoClient, ObjectId, type ChangeStreamInsertDocument, type ResumeToken } from 'mongodb'
+import { type AsyncOrSync } from 'ts-essentials'
 
 type OutboxMessageModel<Event> = {
   _id: ObjectId
@@ -155,14 +155,14 @@ type ConsumerCreationParams<Event> = {
 }
 
 export {
-  ConsumerCreationParams,
-  ErrorCallback,
-  OutboxConsumer,
-  OutboxConsumerModel,
-  OutboxMessageModel,
-  OutboxMessageStream,
-  Publish,
-  SaveWithEventCallback,
-  Start,
-  Stop,
+  type ConsumerCreationParams,
+  type ErrorCallback,
+  type OutboxConsumer,
+  type OutboxConsumerModel,
+  type OutboxMessageModel,
+  type OutboxMessageStream,
+  type Publish,
+  type SaveWithEventCallback,
+  type Start,
+  type Stop,
 }

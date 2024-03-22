@@ -11,7 +11,7 @@ import { noop } from 'ts-essentials'
 import { createChangeStream } from './createChangeStream'
 import { ensureIndexes } from './ensureIndexes'
 import { getConsumer } from './getConsumer'
-import { ConsumerCreationParams, OutboxConsumer, OutboxMessageModel } from './typings'
+import { type ConsumerCreationParams, type OutboxConsumer, type OutboxMessageModel } from './typings'
 
 /**
  * OutboxConsumer is rensposible for consuming events from one partition (`partitionKey` option)

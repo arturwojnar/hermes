@@ -1,15 +1,19 @@
 /* eslint-disable @typescript-eslint/no-floating-promises */
 
 import { OutboxConsumersCollectionName, OutboxMessagesCollectionName } from '@arturwojnar/hermes'
+import { expect, jest } from '@jest/globals'
 import { ObjectId } from 'mongodb'
 import nodeTimersPromises from 'node:timers/promises'
 import { createOutboxConsumer } from '../src'
-import { MedicineEvent, generateEvent } from './events'
+import { generateEvent, type MedicineEvent } from './events'
 import { mongodb } from './mongodb'
 
 describe(`When a message publish fails`, () => {
   test('Then the outbox consumer if stopped should remember last processed message', async () => {
-    const publishEventStub = jest.fn().mockResolvedValueOnce(undefined).mockRejectedValue(new Error())
+    const publishEventStub = jest
+      .fn<() => Promise<void>>()
+      .mockResolvedValueOnce(undefined)
+      .mockRejectedValue(new Error())
 
     await mongodb(async (db, client, onDispose) => {
       const messagesCollection = db.collection(OutboxMessagesCollectionName)
@@ -104,16 +108,16 @@ describe(`When a message publish fails`, () => {
 
   test(`Then the outbox consumer should attempt until it succeeds`, async () => {
     const publishEventStub = jest
-      .fn()
-      .mockResolvedValueOnce('1')
+      .fn<() => Promise<void>>()
+      .mockResolvedValueOnce()
       .mockRejectedValueOnce(new Error())
       .mockRejectedValueOnce(new Error())
-      .mockResolvedValueOnce('2')
-      .mockResolvedValueOnce('3')
+      .mockResolvedValueOnce()
+      .mockResolvedValueOnce()
       .mockRejectedValueOnce(new Error())
-      .mockResolvedValueOnce('4')
+      .mockResolvedValueOnce()
       .mockRejectedValueOnce(new Error())
-      .mockResolvedValueOnce('5')
+      .mockResolvedValueOnce()
 
     await mongodb(async (db, client, onDispose) => {
       const messagesCollection = db.collection(OutboxMessagesCollectionName)

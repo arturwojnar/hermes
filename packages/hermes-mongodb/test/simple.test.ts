@@ -1,14 +1,15 @@
 /* eslint-disable @typescript-eslint/no-floating-promises */
 
 import { OutboxConsumersCollectionName, OutboxMessagesCollectionName } from '@arturwojnar/hermes'
+import { expect, jest } from '@jest/globals'
 import { ObjectId } from 'mongodb'
 import nodeTimersPromises from 'node:timers/promises'
 import { createOutboxConsumer } from '../src'
-import { MedicineAdded, MedicineEvent } from './events'
+import { type MedicineAdded, type MedicineEvent } from './events'
 import { mongodb } from './mongodb'
 
 test('Sending one event works', async () => {
-  const publishEventStub = jest.fn().mockResolvedValue(undefined)
+  const publishEventStub = jest.fn<() => Promise<void>>().mockResolvedValue(undefined)
 
   await mongodb(async (db, client, onDispose) => {
     const messagesCollection = db.collection(OutboxMessagesCollectionName)
@@ -73,7 +74,7 @@ test('Sending one event works', async () => {
 })
 
 test('Sending many events works', async () => {
-  const publishEventStub = jest.fn().mockResolvedValue(undefined)
+  const publishEventStub = jest.fn<() => Promise<void>>().mockResolvedValue(undefined)
 
   await mongodb(async (db, client, onDispose) => {
     const messagesCollection = db.collection(OutboxMessagesCollectionName)
@@ -147,7 +148,7 @@ test('Sending many events works', async () => {
 })
 
 test('Using a callback works', async () => {
-  const publishEventStub = jest.fn().mockResolvedValue(undefined)
+  const publishEventStub = jest.fn<() => Promise<void>>().mockResolvedValue(undefined)
 
   await mongodb(async (db, client, onDispose) => {
     const outbox = createOutboxConsumer<MedicineEvent>({
@@ -188,7 +189,7 @@ test('Using a callback works', async () => {
 })
 
 test('Event is not published when the callback fails', async () => {
-  const publishEventStub = jest.fn().mockResolvedValue(undefined)
+  const publishEventStub = jest.fn<() => Promise<void>>().mockResolvedValue(undefined)
 
   await mongodb(async (db, client, onDispose) => {
     const consumersCollection = db.collection(OutboxConsumersCollectionName)

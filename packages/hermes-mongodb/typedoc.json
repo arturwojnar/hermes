@@ -7,7 +7,7 @@
   "navigationLinks": {
     "Hermes": "/"
   },
-  "titleLink": "/index.html",
+  "titleLink": "/hermes-mongodb/index.html",
   // "plugin": ["typedoc-plugin-markdown"],
   "plugin": ["typedoc-material-theme"],
   "themeColor": "#FA8F05",

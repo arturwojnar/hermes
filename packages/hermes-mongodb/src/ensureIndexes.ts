@@ -1,6 +1,6 @@
 import { OutboxConsumersCollectionName } from '@arturwojnar/hermes'
 import { Db } from 'mongodb'
-import { OutboxConsumerModel } from './typings'
+import { type OutboxConsumerModel } from './typings'
 
 const ensureIndexes = async (db: Db) => {
   const consumers = db.collection<OutboxConsumerModel>(OutboxConsumersCollectionName)

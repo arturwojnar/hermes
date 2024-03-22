@@ -1,4 +1,4 @@
-import { AsyncOrSync } from 'ts-essentials'
+import { type AsyncOrSync } from 'ts-essentials'
 
 const noop = () => {}
 const isNil = (value: unknown) => typeof value === 'undefined' || value === null

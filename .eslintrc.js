@@ -1,13 +1,16 @@
 /* eslint-env node */
 module.exports = {
   root: true,
+  env: {
+    es2023: true,
+    node: true,
+  },
   parser: '@typescript-eslint/parser',
-  plugins: ['@typescript-eslint', 'node', 'prettier', 'eslint-plugin-tsdoc'],
+  plugins: ['@typescript-eslint', 'node', 'prettier', 'eslint-plugin-tsdoc', 'import'],
   parserOptions: {
-    ecmaVersion: 2022,
+    ecmaVersion: 2023,
     tsconfigRootDir: __dirname,
-    project: ['./tsconfig.json', './packages/*/tsconfig.json'],
-    // tsconfigRootDir: import.meta.dirname,
+    project: ['./tsconfig.json', './packages/*/tsconfig.json', './packages/*/rollup.config.js'],
   },
   ignorePatterns: ['examples/**/*'],
   extends: [

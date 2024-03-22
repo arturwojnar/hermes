@@ -1,13 +1,13 @@
 export { createOutboxConsumer } from './outbox'
 export {
-  ConsumerCreationParams,
-  ErrorCallback,
-  OutboxConsumer,
-  OutboxConsumerModel,
-  OutboxMessageModel,
-  OutboxMessageStream,
-  Publish,
-  SaveWithEventCallback,
-  Start,
-  Stop,
+  type ConsumerCreationParams,
+  type ErrorCallback,
+  type OutboxConsumer,
+  type OutboxConsumerModel,
+  type OutboxMessageModel,
+  type OutboxMessageStream,
+  type Publish,
+  type SaveWithEventCallback,
+  type Start,
+  type Stop,
 } from './typings'

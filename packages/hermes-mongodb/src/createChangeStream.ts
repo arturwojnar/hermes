@@ -1,6 +1,6 @@
-import { Collection, ResumeToken } from 'mongodb'
-import { PipelineStage } from 'mongoose'
-import { OutboxMessageModel, OutboxMessageStream } from './typings'
+import { Collection, type ResumeToken } from 'mongodb'
+import { type PipelineStage } from 'mongoose'
+import { type OutboxMessageModel, type OutboxMessageStream } from './typings'
 
 const createChangeStream = <Event>(
   messages: Collection<OutboxMessageModel<Event>>,

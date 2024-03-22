@@ -1,18 +1,19 @@
 /* eslint-disable @typescript-eslint/no-floating-promises */
 
 import { OutboxConsumersCollectionName, OutboxMessagesCollectionName } from '@arturwojnar/hermes'
+import { expect, jest } from '@jest/globals'
 import { ObjectId } from 'mongodb'
 import nodeTimersPromises from 'node:timers/promises'
 import { createOutboxConsumer } from '../src'
-import { MedicineEvent, generateEvent } from './events'
+import { generateEvent, type MedicineEvent } from './events'
 import { mongodb } from './mongodb'
 
 test(`Outbox consumer should resume from the last processed message`, async () => {
   const publishEventStub = jest
-    .fn()
-    .mockResolvedValueOnce('1')
-    .mockResolvedValueOnce('2')
-    .mockResolvedValueOnce('3')
+    .fn<() => Promise<void>>()
+    .mockResolvedValueOnce()
+    .mockResolvedValueOnce()
+    .mockResolvedValueOnce()
     .mockRejectedValue(new Error())
 
   await mongodb(async (db, client, onDispose) => {
