@@ -11,20 +11,7 @@ module.exports = {
       tsconfig: 'tsconfig.jest.json',
     },
   },
-  moduleNameMapper: {
-    '^(\\.{1,2}/.*)\\.js$': '$1',
-  },
   transform: {},
-  // transform: {
-  //   // '^.+\\.[tj]sx?$' to process js/ts with `ts-jest`
-  //   // '^.+\\.m?[tj]sx?$' to process js/ts/mjs/mts with `ts-jest`
-  //   '^.+\\.m?[tj]sx?$': [
-  //     'ts-jest',
-  //     {
-  //       useESM: true,
-  //     },
-  //   ],
-  // },
   testMatch: ['**/test/*.test.ts'],
   testEnvironment: 'node',
   testTimeout: 20000,
@@ -34,30 +21,5 @@ module.exports = {
   },
   modulePaths: ['<rootDir>'],
   collectCoverage: true,
-  // clearMocks: true,
   coverageDirectory: 'coverage',
-  // globals: {
-  //   'ts-jest': {
-  //     tsConfig: 'tsconfig.json',
-  //   },
-  // },
-  // transform: {
-  //   '^.+\\.{ts|tsx}?$': [
-  //     'ts-jest',
-  //     {
-  //       babel: true,
-  //       tsConfig: 'tsconfig.jest.json',
-  //     },
-  //   ],
-  // },
-  // moduleFileExtensions: ['ts', 'js', 'json'],
-  // // testMatch: ['**/?(*.)+(e2e.)(spec|test).ts', 'test/e2e/*.test.(ts)'],
-  // testMatch: ['**/test/*.test.ts'],
-  // testEnvironment: 'node',
-  // testTimeout: 20000,
-  // moduleNameMapper: pathsToModuleNameMapper(compilerOptions.paths, { prefix: '<rootDir>' }),
-  // modulePaths: ['<rootDir>'],
-  // collectCoverage: true,
-  // // clearMocks: true,
-  // coverageDirectory: 'coverage',
 }

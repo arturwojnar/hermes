@@ -1,3 +1,7 @@
+[![Build and test](https://github.com/arturwojnar/hermes/actions/workflows/build-and-test.yaml/badge.svg?branch=main)](https://github.com/arturwojnar/hermes/actions/workflows/build-and-test.yaml)
+[![Deploy VitePress site to Pages](https://github.com/arturwojnar/hermes/actions/workflows/publish-docs.yaml/badge.svg)](https://github.com/arturwojnar/hermes/actions/workflows/publish-docs.yaml)
+[![Publish to NPM](https://github.com/arturwojnar/hermes/actions/workflows/publish.yaml/badge.svg)](https://github.com/arturwojnar/hermes/actions/workflows/publish.yaml)
+
 <img src="./docs/public/logo-main.png" alt="Hermes logo" style="margin: 0 auto; width: 70%; display: block;" />
 <br />
 <br />

@@ -6,7 +6,7 @@
     "build": "rollup -c",
     "build:ts": "tsc -p tsconfig.build.json",
     "clean": "rm -rf ./lib/",
-    "lint:eslint": "eslint '**/*.ts'",
+    "lint:eslint": "eslint 'src/**/*.ts'",
     "lint:prettier": "prettier --check \"**/**/!(*.d).{ts,json,md}\"",
     "lint-fix": "eslint --fix -f unix \"src/**/*.{ts,tsx}\"",
     "prepare": "husky install",
@@ -44,6 +44,7 @@
   ],
   "license": "ISC",
   "devDependencies": {
+    "@jest/globals": "^29.7.0",
     "@microsoft/tsdoc": "~0.14.2",
     "@microsoft/tsdoc-config": "~0.16.2",
     "@rollup/plugin-commonjs": "^25.0.7",

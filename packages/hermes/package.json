@@ -7,7 +7,7 @@
     "build": "rollup -c",
     "build:ts": "tsc -p tsconfig.build.json",
     "clean": "rm -rf ./lib/",
-    "lint:eslint": "eslint '**/*.ts'",
+    "lint:eslint": "eslint 'src/**/*.ts'",
     "lint:prettier": "prettier --check \"**/**/!(*.d).{ts,json,md}\"",
     "lint-fix": "eslint --fix -f unix \"src/**/*.{ts,tsx}\"",
     "semantic-release": "semantic-release",

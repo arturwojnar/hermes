@@ -1,6 +1,6 @@
 {
   "extends": "./tsconfig.common.json",
-  "include": ["./tsup.config.ts", "./packages/hermes/tsconfig.json", "./packages/hermes-mongodb/tsconfig.json"],
+  "include": ["./packages/*/rollup.config.js", "./packages/*/tsconfig.json"],
   "exclude": ["node_modules", "tmp"],
   "files": [],
   "compilerOptions": {

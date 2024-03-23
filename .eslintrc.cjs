@@ -10,7 +10,8 @@ module.exports = {
   parserOptions: {
     ecmaVersion: 2023,
     tsconfigRootDir: __dirname,
-    project: ['./tsconfig.json', './packages/*/tsconfig.json', './packages/*/rollup.config.js'],
+    sourceType: 'module',
+    project: ['./tsconfig.json', './packages/*/tsconfig.json'],
   },
   ignorePatterns: ['examples/**/*'],
   extends: [
