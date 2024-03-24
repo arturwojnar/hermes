@@ -35,16 +35,16 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
 
-      # - name: Build
-      #   run: npm run build
-      #   env:
-      #     NODE_ENV: production
+      - name: Build
+        run: npm run build
+        env:
+          NODE_ENV: production
 
-      # - name: Set public publishing
-      #   run: npm config set access public
+      - name: Set public publishing
+        run: npm config set access public
 
-      # - name: Publish package on NPM 📦
-      #   run: npm publish --ws
-      #   env:
-      #     NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
-      #     NODE_ENV: production
+      - name: Publish package on NPM 📦
+        run: npm publish --ws
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+          NODE_ENV: production
