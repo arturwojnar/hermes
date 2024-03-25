@@ -10,7 +10,6 @@
     "lint:eslint": "eslint 'src/**/*.ts'",
     "lint:prettier": "prettier --check \"**/**/!(*.d).{ts,json,md}\"",
     "lint-fix": "eslint --fix -f unix \"src/**/*.{ts,tsx}\"",
-    "semantic-release": "semantic-release",
     "test": "echo 1",
     "typecheck": "tsc --noEmit",
     "typedoc": "typedoc"
