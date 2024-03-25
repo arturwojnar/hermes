@@ -30,8 +30,6 @@ jobs:
           rm -f .npmrc
           printf "//registry.npmjs.org/:_authToken=${{secrets.NPM_TOKEN}}" > .npmrc
           npm ci
-        env:
-          NODE_ENV: production
 
       - name: Build
         run: npm run build
