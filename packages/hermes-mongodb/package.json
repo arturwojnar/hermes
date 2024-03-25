@@ -1,5 +1,5 @@
 {
-  "name": "hermes-mongodb",
+  "name": "@arturwojnar/hermes-mongodb",
   "version": "0.0.0-development.0",
   "description": "Production-Ready TypeScript Outbox Pattern for MongoDB",
   "scripts": {
@@ -55,6 +55,9 @@
   "files": [
     "lib"
   ],
+  "publishConfig": {
+    "access": "public"
+  },
   "license": "ISC",
   "devDependencies": {
     "@jest/globals": "~29.7.0",

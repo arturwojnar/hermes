@@ -1,5 +1,5 @@
 {
-  "name": "hermes",
+  "name": "@arturwojnar/hermes",
   "version": "0.0.0-development.0",
   "description": "Production-Ready TypeScript Outbox Pattern",
   "type": "module",
@@ -54,6 +54,9 @@
   "files": [
     "lib"
   ],
+  "publishConfig": {
+    "access": "public"
+  },
   "devDependencies": {
     "@microsoft/tsdoc": "~0.14.2",
     "@microsoft/tsdoc-config": "~0.16.2",

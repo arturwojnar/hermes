@@ -12,8 +12,7 @@
     "node": ">=20.9.0"
   },
   "publishConfig": {
-    "registry": "https://npm.pkg.github.com/",
-    "cache": "~/.npm"
+    "access": "public"
   },
   "repository": {
     "type": "git",
@@ -76,6 +75,7 @@
     "prettier": "~3.2.5",
     "prettier-eslint": "~16.3.0",
     "semantic-release": "~23.0.6",
+    "semantic-release-monorepo": "~8.0.2",
     "ts-essentials": "~9.4.1",
     "ts-jest": "~29.1.2",
     "ts-node": "~10.9.2",
