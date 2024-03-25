@@ -96,6 +96,6 @@
     "mongodb": "~6.5.0"
   },
   "peerDependencies": {
-    "@arturwojnar/hermes": ">=0.0.0"
+    "@arturwojnar/hermes": ">=1.0.0-alpha.0"
   }
 }
