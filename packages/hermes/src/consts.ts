@@ -1,4 +1,4 @@
-const OutboxMessagesCollectionName = '__outboxMessages' as const
-const OutboxConsumersCollectionName = '__outboxConsumers' as const
+const OutboxMessagesCollectionName = '__outboxMessages'
+const OutboxConsumersCollectionName = '__outboxConsumers'
 
 export { OutboxConsumersCollectionName, OutboxMessagesCollectionName }
