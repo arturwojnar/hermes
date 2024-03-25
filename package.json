@@ -1,6 +1,6 @@
 {
   "name": "@arturwojnar/core",
-  "version": "1.0.0",
+  "version": "0.0.1",
   "description": "Production-Ready TypeScript Outbox Pattern",
   "main": "lib/index.js",
   "files": [
@@ -26,6 +26,7 @@
     "prepare": "husky install",
     "build": "npm run build:ts && npm run build --ws",
     "build:ts": "npm run build:ts --ws",
+    "build:clear": "rm -rf packages/*/lib packages/*/tsconfig.build.tsbuildinfo",
     "test": "npm run test --ws",
     "lint": "npm run lint:eslint --ws && npm run lint:prettier",
     "lint:prettier": "prettier --check \"**/**/!(*.d).{ts,json,md}\"",
@@ -54,6 +55,7 @@
     "@semantic-release/changelog": "~6.0.3",
     "@semantic-release/git": "~10.0.1",
     "@semantic-release/github": "10.0.2",
+    "@semantic-release/npm": "~12.0.0",
     "@types/jest": "~29.5.12",
     "@types/node": "~20.11.30",
     "@types/sinon": "~17.0.3",
@@ -69,6 +71,7 @@
     "eslint-plugin-tsdoc": "~0.2.17",
     "husky": "~9.0.11",
     "jest": "~29.7.0",
+    "lerna": "~8.1.2",
     "lint-staged": "~15.2.2",
     "nodemon": "~3.1.0",
     "npm-check-updates": "~16.14.17",

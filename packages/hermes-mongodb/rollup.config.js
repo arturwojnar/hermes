@@ -19,7 +19,7 @@ export default [
       },
     ],
     plugins: [json(), typescript({ tsconfig: './tsconfig.build.json' }), resolve(), commonjs()],
-    external: ['@arturwojnar/hermes'],
+    external: ['@arturwojnar/hermes', 'mongodb'],
     onwarn(warning, warn) {
       // Check the warning code
       if (warning.code === 'CIRCULAR_DEPENDENCY' && /node_modules/.test(warning.message)) {

@@ -1,6 +1,6 @@
 {
   "name": "@arturwojnar/hermes",
-  "version": "0.0.0-development.0",
+  "version": "0.0.1",
   "description": "Production-Ready TypeScript Outbox Pattern",
   "type": "module",
   "scripts": {
