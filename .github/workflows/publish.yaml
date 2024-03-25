@@ -27,7 +27,7 @@ jobs:
 
       - name: Install dependencies
         run: |
-          rm .npmrc
+          rm -f .npmrc
           printf "//registry.npmjs.org/:_authToken=${{secrets.NPM_TOKEN}}" > .npmrc
           npm ci
         env:
