@@ -1,5 +1,4 @@
 module.exports = {
-  extends: 'semantic-release-monorepo',
   branches: ['main'],
   plugins: [
     '@semantic-release/commit-analyzer',
@@ -13,7 +12,7 @@ module.exports = {
     [
       '@semantic-release/npm',
       {
-        npmPublish: true,
+        npmPublish: false,
       },
     ],
     ['@semantic-release/github', { successComment: true, failTitle: false }],
