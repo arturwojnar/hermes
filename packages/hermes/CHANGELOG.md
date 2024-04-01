@@ -3,6 +3,12 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [1.0.0-alpha.2](https://github.com/arturwojnar/hermes/compare/v1.0.0-alpha.1...v1.0.0-alpha.2) (2024-04-01)
+
+### Bug Fixes
+
+- fixed the build of hermes-mongodb to keep src files directly under the root build folder ([c3a372e](https://github.com/arturwojnar/hermes/commit/c3a372e4672c9e85d7881a415cc1a0464686c5ec))
+
 # [1.0.0-alpha.1](https://github.com/arturwojnar/hermes/compare/v1.0.0-alpha.0...v1.0.0-alpha.1) (2024-03-25)
 
 - handling error by optional callbacks onDbError and onFailedPublish ([cc14afe](https://github.com/arturwojnar/hermes/commit/cc14afe8662daf0a60d3089452f5d98b637de5ba))
