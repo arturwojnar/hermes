@@ -16,7 +16,7 @@ We can use Apache Pulsar and an Exclusive subscription to simulate a mutex behav
 
 ## Defining some events
 
-<<< @/../examples/events.ts
+<<< @/../examples/common/events.ts
 
 ## One partition example
 

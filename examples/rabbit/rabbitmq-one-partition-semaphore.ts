@@ -1,12 +1,12 @@
 // import { OutboxConsumer, addDisposeOnSigterm } from '@outbox'
 // import { addDisposeOnSigterm } from '@arturwojnar/hermes'
-import { addDisposeOnSigterm } from '../packages/hermes/src/index'
+import { addDisposeOnSigterm } from '@arturwojnar/hermes'
 // import { createOutboxConsumer } from '@arturwojnar/hermes-mongodb'
 import amqp from 'amqplib'
 import assert from 'assert'
 import { MongoClient, ObjectId } from 'mongodb'
 import { setTimeout } from 'node:timers/promises'
-import { createOutboxConsumer } from '../packages/hermes-mongodb/src/index'
+import { createOutboxConsumer } from '../../packages/hermes-mongodb/src/index'
 
 type DomainEvent<Name extends string, Data> = Readonly<{
   name: Name

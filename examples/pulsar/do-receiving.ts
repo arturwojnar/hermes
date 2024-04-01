@@ -1,5 +1,5 @@
 import { setTimeout } from 'node:timers/promises'
-import { Consumer } from '../node_modules/pulsar-client/index'
+import { Consumer } from 'pulsar-client'
 
 export const doReceiving = async (subscription: Consumer) => {
   while (true) {

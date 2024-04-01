@@ -1,7 +1,7 @@
+import { OutboxConsumer } from '@arturwojnar/hermes-mongodb'
+import { ObjectId } from 'mongodb'
 import { setTimeout } from 'node:timers/promises'
-import { OutboxConsumer } from '../../packages/hermes-mongodb/src/typings'
-import { MedicineEvent } from '../events'
-import { ObjectId } from '../node_modules/mongodb/mongodb'
+import { MedicineEvent } from '../common/events'
 
 export const doPublishing = async (outbox: OutboxConsumer<MedicineEvent>) => {
   while (true) {
