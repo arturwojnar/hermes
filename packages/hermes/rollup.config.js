@@ -18,7 +18,12 @@ export default [
         sourcemap: true,
       },
     ],
-    plugins: [json(), typescript({ tsconfig: './tsconfig.build.json' }), resolve(), commonjs()],
+    plugins: [
+      json(),
+      typescript({ tsconfig: './tsconfig.build.json', outputToFilesystem: false }),
+      resolve(),
+      commonjs(),
+    ],
     onwarn(warning, warn) {
       // Check the warning code
       if (warning.code === 'CIRCULAR_DEPENDENCY' && /node_modules/.test(warning.message)) {

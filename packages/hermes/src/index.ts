@@ -1,4 +1,6 @@
 export { CancellationPromise } from './CancellablePromise'
 export { addDisposeOnSigterm } from './addDisposeOnSigterm'
+export { assertDate } from './assert'
 export { OutboxConsumersCollectionName, OutboxMessagesCollectionName } from './consts'
+export { AssertionError, HermesError, HermesErrorCode } from './errors'
 export { isNil, noop, swallow } from './utils'
