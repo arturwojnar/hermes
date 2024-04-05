@@ -6,6 +6,7 @@ type OutboxMessageModel<Event> = {
   occurredAt: Date
   data: Event
   partitionKey: string
+  sentAt?: Date
 }
 
 type OutboxConsumerModel = {
@@ -107,6 +108,11 @@ type OutboxConsumer<Event> = {
 type ErrorCallback = (error: unknown) => void
 
 /**
+ * A function returning current date.
+ */
+type NowFunction = () => Date
+
+/**
  * Creation parameters of `OutboxConsumer`.
  *
  * @param client -                      Instance of the database connection.
@@ -117,14 +123,14 @@ type ErrorCallback = (error: unknown) => void
  *                                                                <br /><b>The most important is to throw an error on a failed publish. Otherwise, the `OutboxConsumer` won't consider the event as published.</b>
  * @param partitionKey -                Name of the partition of the `OutboxConsumer`.
  * @param waitAfterFailedPublishMs -    Time after the `OutboxConsumer` will wait after a failed event publish.
- * @param  shouldDisposeOnSigterm -     Indicates whether the `OutboxConsumer` should register a cleaning callback on `SIGTERM` and `SIGINT`.
- * @param  onFailedPublish -            A callback fired on a failed publish.
+ * @param shouldDisposeOnSigterm -      Indicates whether the `OutboxConsumer` should register a cleaning callback on `SIGTERM` and `SIGINT`.
+ * @param onFailedPublish -             A callback fired on a failed publish.
  * @param onDbError -                   A callback failed on an error related to the database.
  * @template Event -                    Events handled by the `OutboxConsumer`. The type can be limited with a discrimitation union.
  * @example
  *  const outbox = createOutboxConsumer<Event1 | Event2>({
  *    client,
- *    client.db('hospital'),
+ *    db: client.db('hospital'),
  *    publish: async (event) => await eventBus.publish(event),
  *  })
  */
@@ -143,7 +149,13 @@ type ConsumerCreationParams<Event> = {
   /**
    * @defaultValue true
    */
-  shouldDisposeOnSigterm?: boolean // default true
+  shouldDisposeOnSigterm?: boolean
+  /**
+   * Use with consciously and carefully.
+   * When `true`, Hermes will be affecting many documents, resulting in much more I/O operations.
+   * @defaultValue false
+   */
+  saveTimestamps?: boolean
   /**
    * @defaultValue `noop`
    */
@@ -152,6 +164,10 @@ type ConsumerCreationParams<Event> = {
    * @defaultValue `noop`
    */
   onDbError?: ErrorCallback
+  /**
+   * @defaultValue `() => new Date()`
+   */
+  now?: NowFunction
 }
 
 export {

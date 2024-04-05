@@ -5,13 +5,15 @@ const { compilerOptions } = require('./tsconfig.json')
 module.exports = {
   preset: 'ts-jest/presets/default-esm',
   extensionsToTreatAsEsm: ['.ts'],
-  globals: {
-    'ts-jest': {
-      useESM: true,
-      tsconfig: 'tsconfig.jest.json',
-    },
+  transform: {
+    '^.+\\.ts$': [
+      'ts-jest',
+      {
+        useESM: true,
+        tsconfig: 'tsconfig.jest.json',
+      },
+    ],
   },
-  transform: {},
   testMatch: ['**/test/*.test.ts'],
   testEnvironment: 'node',
   testTimeout: 20000,

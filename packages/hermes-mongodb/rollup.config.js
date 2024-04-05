@@ -18,7 +18,12 @@ export default [
         sourcemap: true,
       },
     ],
-    plugins: [json(), typescript({ tsconfig: './tsconfig.build.json' }), resolve(), commonjs()],
+    plugins: [
+      json(),
+      typescript({ tsconfig: './tsconfig.build.json', outputToFilesystem: false }),
+      resolve(),
+      commonjs(),
+    ],
     external: ['@arturwojnar/hermes', 'mongodb'],
     onwarn(warning, warn) {
       // Check the warning code

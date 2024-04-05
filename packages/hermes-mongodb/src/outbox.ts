@@ -2,6 +2,7 @@ import {
   CancellationPromise,
   OutboxMessagesCollectionName,
   addDisposeOnSigterm,
+  assertDate,
   isNil,
   swallow,
 } from '@arturwojnar/hermes'
@@ -24,6 +25,16 @@ import { type ConsumerCreationParams, type OutboxConsumer, type OutboxMessageMod
 export const createOutboxConsumer = <Event>(params: ConsumerCreationParams<Event>): OutboxConsumer<Event> => {
   const { client, db, publish: _publish } = params
   const partitionKey = params.partitionKey || 'default'
+  const saveTimestamps = params.saveTimestamps || false
+  const _now = params.now
+  const now =
+    typeof _now === 'function'
+      ? () => {
+          const value = _now()
+          assertDate(value)
+          return value
+        }
+      : () => new Date()
   const waitAfterFailedPublishMs = params.waitAfterFailedPublishMs || 1000
   const shouldDisposeOnSigterm = isNil(params.shouldDisposeOnSigterm) ? true : !!params.shouldDisposeOnSigterm
   const onDbError = params.onDbError || noop
@@ -97,7 +108,14 @@ export const createOutboxConsumer = <Event>(params: ConsumerCreationParams<Event
               }
 
               if (await _waitUntilEventIsSent(message.data)) {
-                await consumer.update(documentKey._id, resumeToken)
+                if (saveTimestamps) {
+                  await db
+                    .collection<OutboxMessageModel<Event>>(OutboxMessagesCollectionName)
+                    .updateOne({ _id: message._id }, { $set: { sentAt: now() } })
+                  await consumer.update(documentKey._id, resumeToken)
+                } else {
+                  await consumer.update(documentKey._id, resumeToken)
+                }
               }
             }
           } catch (error) {
