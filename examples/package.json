@@ -31,8 +31,8 @@
     "typescript-transform-paths": "~3.4.7"
   },
   "dependencies": {
-    "@arturwojnar/hermes": "~1.0.0-alpha.1",
-    "@arturwojnar/hermes-mongodb": "~1.0.0-alpha.1",
+    "@arturwojnar/hermes": "~1.0.0-alpha.3",
+    "@arturwojnar/hermes-mongodb": "~1.0.0-alpha.3",
     "amqplib": "~0.10.3",
     "mongodb": "~6.4.0",
     "pulsar-client": "~1.10.0"
