@@ -18,5 +18,6 @@ lib/*
 
 e2e/*
 
+**/.rollup.cache/*
 # packages/hermes/src/*
 # packages/hermes-mongodb/src/*
