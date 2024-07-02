@@ -24,4 +24,5 @@ module.exports = {
   modulePaths: ['<rootDir>'],
   collectCoverage: true,
   coverageDirectory: 'coverage',
+  setupFilesAfterEnv: ['<rootDir>/jest.setup.cjs'],
 }
