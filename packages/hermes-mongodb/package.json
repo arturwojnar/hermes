@@ -27,6 +27,9 @@
     "name": "Artur Wojnar",
     "email": "contact@arturwojnar.dev"
   },
+  "engines": {
+    "node": ">=18.20.3"
+  },
   "repository": {
     "type": "git",
     "url": "git+https://github.com/arturwojnar/hermes.git",

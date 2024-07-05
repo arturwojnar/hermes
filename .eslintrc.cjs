@@ -31,6 +31,8 @@ module.exports = {
     'node/no-unsupported-features/es-syntax': 'off',
     'node/no-missing-require': 'off',
     'node/shebang': 'off',
+    'node/no-extraneous-import': 'off',
+    'node/no-extraneous-require': 'off',
     '@typescript-eslint/no-redundant-type-constituents': 'off',
     '@typescript-eslint/no-use-before-define': 'off',
     quotes: ['warn', 'single', { avoidEscape: true }],

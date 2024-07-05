@@ -1,9 +1,12 @@
-import typescript from '@rollup/plugin-typescript'
-import resolve from '@rollup/plugin-node-resolve'
+// @ts-check
+
 import commonjs from '@rollup/plugin-commonjs'
 import json from '@rollup/plugin-json'
+import resolve from '@rollup/plugin-node-resolve'
+import typescript from '@rollup/plugin-typescript'
 
-export default [
+/** @type {import('rollup').RollupOptions[]} */
+const options = [
   {
     input: 'src/index.ts', // Entry point for your library
     output: [
@@ -35,3 +38,5 @@ export default [
     },
   },
 ]
+
+export default options
