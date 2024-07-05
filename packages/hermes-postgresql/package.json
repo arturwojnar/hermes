@@ -1,0 +1,75 @@
+{
+  "name": "@arturwojnar/hermes-postgresql",
+  "version": "1.0.0-alpha.3",
+  "description": "Production-Ready TypeScript Outbox Pattern for PostgreSQL",
+  "scripts": {
+    "build": "rollup -c",
+    "build:ts": "tsc -p tsconfig.build.json",
+    "clean": "rm -rf ./lib/",
+    "lint:eslint": "eslint 'src/**/*.ts'",
+    "lint:prettier": "prettier --check \"**/**/!(*.d).{ts,json,md}\"",
+    "lint-fix": "eslint --fix -f unix \"src/**/*.{ts,tsx}\"",
+    "prepare": "husky install",
+    "test": "node --experimental-vm-modules ../../node_modules/.bin/jest --colors --coverage --verbose --maxConcurrency=5 --config=jest.config.cjs",
+    "typecheck": "tsc --noEmit",
+    "typedoc": "typedoc"
+  },
+  "keywords": [
+    "outbox",
+    "postgresql",
+    "microservices",
+    "messaging",
+    "transactional",
+    "events"
+  ],
+  "author": {
+    "name": "Artur Wojnar",
+    "email": "contact@arturwojnar.dev"
+  },
+  "engines": {
+    "node": ">=18.20.3"
+  },
+  "homepage": "https://hermes.arturwojnar.dev",
+  "license": "ISC",
+  "type": "module",
+  "main": "lib/index.js",
+  "types": "./lib/index.d.ts",
+  "publishConfig": {
+    "access": "public"
+  },
+  "directories": {
+    "lib": "lib",
+    "test": "__tests__"
+  },
+  "files": [
+    "lib"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/arturwojnar/hermes.git",
+    "directory": "packages/hermes-postgresql"
+  },
+  "bugs": {
+    "url": "https://github.com/arturwojnar/hermes/issues"
+  },
+  "exports": {
+    ".": {
+      "import": {
+        "types": "./lib/index.d.mts",
+        "default": "./lib/index.mjs"
+      },
+      "require": {
+        "types": "./lib/index.d.ts",
+        "default": "./lib/index.js"
+      }
+    }
+  },
+  "devDependencies": {
+    "@jest/globals": "~29.7.0",
+    "ts-essentials": "~10.0.1"
+  },
+  "dependencies": {},
+  "peerDependencies": {
+    "@arturwojnar/hermes": ">=1.0.0-alpha.0"
+  }
+}
