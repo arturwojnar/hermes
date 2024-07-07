@@ -1,6 +1,8 @@
 {
   "extends": "./tsconfig.common.json",
   "include": [
+    "jest.config.cjs",
+    ".eslintrc.cjs",
     "./packages/*/rollup.config.js",
     "./packages/*/tsconfig.json",
     "packages/hermes/rollup.config.js",
@@ -14,8 +16,13 @@
     "noEmit": true,
     "paths": {
       "@arturwojnar/hermes": ["./packages/hermes/src"],
-      "@arturwojnar/hermes-mongodb": ["./packages/hermes-mongodb/src"]
+      "@arturwojnar/hermes-mongodb": ["./packages/hermes-mongodb/src"],
+      "@arturwojnar/hermes-postgresql": ["./packages/hermes-postgresql/src"]
     }
   },
-  "references": [{ "path": "./packages/hermes" }, { "path": "./packages/hermes-mongodb" }]
+  "references": [
+    { "path": "./packages/hermes" },
+    { "path": "./packages/hermes-mongodb" },
+    { "path": "./packages/hermes-postgresql" }
+  ]
 }

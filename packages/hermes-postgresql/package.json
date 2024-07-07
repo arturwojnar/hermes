@@ -37,10 +37,6 @@
   "publishConfig": {
     "access": "public"
   },
-  "directories": {
-    "lib": "lib",
-    "test": "__tests__"
-  },
   "files": [
     "lib"
   ],
@@ -66,9 +62,13 @@
   },
   "devDependencies": {
     "@jest/globals": "~29.7.0",
+    "@testcontainers/postgresql": "~10.10.1",
+    "testcontainers": "~10.10.1",
     "ts-essentials": "~10.0.1"
   },
-  "dependencies": {},
+  "dependencies": {
+    "postgres": "~3.4.4"
+  },
   "peerDependencies": {
     "@arturwojnar/hermes": ">=1.0.0-alpha.0"
   }

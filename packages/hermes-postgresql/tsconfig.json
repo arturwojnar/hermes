@@ -1,6 +1,6 @@
 {
   "extends": "../../tsconfig.eslint.json",
-  "include": ["./src/**/*", "./test/**/*", "rollup.config.js", ".eslintrc.cjs"],
+  "include": ["./src/**/*", "test/**/*"],
   "compilerOptions": {
     "baseUrl": ".",
     "noEmit": false,
@@ -10,7 +10,7 @@
     "rootDirs": ["./src", "./test"],
     "paths": {
       "@arturwojnar/hermes": ["../hermes"],
-      "@arturwojnar/hermes-mongodb": ["./"]
+      "@arturwojnar/hermes-postgresql": ["./"]
     }
   },
   "references": [

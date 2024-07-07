@@ -1,4 +1,8 @@
-/* eslint-env node */
+// @ts-check
+
+/**
+ * @type {import('eslint').ESLint.ConfigData}
+ */
 module.exports = {
   root: true,
   env: {
@@ -35,7 +39,6 @@ module.exports = {
     'node/no-extraneous-require': 'off',
     '@typescript-eslint/no-redundant-type-constituents': 'off',
     '@typescript-eslint/no-use-before-define': 'off',
-    quotes: ['warn', 'single', { avoidEscape: true }],
     'node/no-unpublished-import': 'off',
     '@typescript-eslint/no-unsafe-assignment': 'off',
     '@typescript-eslint/no-var-requires': 'off',

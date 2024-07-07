@@ -33,6 +33,7 @@
     "lint:eslint": "eslint",
     "lint:fix": "eslint packages/**/*.{ts,tsx} --fix",
     "fix:prettier": "prettier --write \"**/**/!(*.d).{ts,json,md}\"",
+    "fix:all": "npm run lint:fix && npm run fix:prettier",
     "typedoc": "npm run typedoc --ws",
     "docs:dev": "vitepress dev docs",
     "docs:build": "vitepress build docs",
@@ -94,7 +95,8 @@
   "private": true,
   "workspaces": [
     "packages/hermes",
-    "packages/hermes-mongodb"
+    "packages/hermes-mongodb",
+    "packages/hermes-postgresql"
   ],
   "dependencies": {
     "tsconfig-paths": "~4.2.0"

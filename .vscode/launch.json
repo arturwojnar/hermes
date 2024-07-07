@@ -34,7 +34,7 @@
     {
       "args": [
         "-c",
-        "${workspaceFolder}/jest.config.js",
+        "${workspaceFolder}/jest.config.cjs",
         "--maxConcurrency=1",
         "--detectOpenHandles",
         "--colors",
@@ -47,6 +47,24 @@
       "request": "launch",
       "skipFiles": ["<node_internals>/**"],
       "type": "node"
+    },
+    {
+      "type": "node",
+      "request": "launch",
+      "name": "test2",
+      "runtimeExecutable": "node",
+      "runtimeArgs": ["--experimental-vm-modules", "${workspaceRoot}/node_modules/.bin/jest"],
+      "cwd": "${workspaceFolder}",
+      "args": [
+        "-c",
+        "${workspaceFolder}/packages/hermes-postgresql/jest.config.cjs",
+        "--maxConcurrency=1",
+        "--runInBand",
+        "--detectOpenHandles",
+        "--colors",
+        "--verbose"
+      ],
+      "internalConsoleOptions": "openOnSessionStart"
     }
   ]
 }
