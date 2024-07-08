@@ -9,6 +9,7 @@ export const postgres = async (
   version = '16.3',
 ) => {
   const container = await new PostgreSqlContainer(`postgres:${version}-alpine`)
+    // , 'max_wal_senders=10', 'max_replication_slots=10'
     .withCommand(['postgres', '-c', 'wal_level=logical'])
     .start()
 
