@@ -1,0 +1,18 @@
+version: '3.9'
+
+services:
+  postgres:
+    image: postgres:16.3-alpine
+    restart: always
+    ports:
+      - "5434:5432"
+    environment:
+      - POSTGRES_DB=hermes
+      - POSTGRES_USER=hermes
+      - POSTGRES_PASSWORD=hermes
+    command:
+      - "postgres"
+      - "-c"
+      - "wal_level=logical"
+      # - "max_wal_senders=10"
+      # - "max_replication_slots=10"
