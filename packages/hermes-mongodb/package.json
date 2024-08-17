@@ -1,6 +1,6 @@
 {
   "name": "@arturwojnar/hermes-mongodb",
-  "version": "1.0.0-alpha.3",
+  "version": "1.0.0-alpha.4",
   "description": "Production-Ready TypeScript Outbox Pattern for MongoDB",
   "scripts": {
     "build": "rollup -c",
@@ -67,10 +67,8 @@
     "mongoose": "~8.4.4",
     "ts-essentials": "~10.0.1"
   },
-  "dependencies": {
-    "mongodb": "~6.8.0"
-  },
   "peerDependencies": {
-    "@arturwojnar/hermes": ">=1.0.0-alpha.0"
+    "@arturwojnar/hermes": ">=1.0.0-alpha.0",
+    "mongodb": ">= 6.8.0 || < 7.0.0"
   }
 }
