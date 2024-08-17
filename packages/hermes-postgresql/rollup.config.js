@@ -27,7 +27,7 @@ const options = [
       resolve(),
       commonjs(),
     ],
-    external: ['@arturwojnar/hermes', 'mongodb'],
+    external: ['@arturwojnar/hermes', 'postgres'],
     onwarn(warning, warn) {
       // Check the warning code
       if (warning.code === 'CIRCULAR_DEPENDENCY' && /node_modules/.test(warning.message)) {

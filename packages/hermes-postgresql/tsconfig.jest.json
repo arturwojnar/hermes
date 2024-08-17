@@ -16,7 +16,7 @@
     "sourceMap": true,
     "paths": {
       "@arturwojnar/hermes": ["../hermes"],
-      "@arturwojnar/hermes-mongodb": ["./"]
+      "@arturwojnar/hermes-postgresql": ["./"]
     }
   },
   "references": [
