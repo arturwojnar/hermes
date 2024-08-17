@@ -1,6 +1,6 @@
 {
   "name": "@arturwojnar/hermes-postgresql",
-  "version": "1.0.0-alpha.4",
+  "version": "1.0.0-alpha.5",
   "description": "Production-Ready TypeScript Outbox Pattern for PostgreSQL",
   "private": true,
   "scripts": {

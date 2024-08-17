@@ -1,3 +1,34 @@
+# Change Log
+
+All notable changes to this project will be documented in this file.
+See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
+
+# 1.0.0-alpha.5 (2024-08-17)
+
+# 1.0.0-alpha.3 (2024-04-05)
+
+### Features
+
+- new option `saveTimestamps` lets to attach sent timestamps to events that have been successfully sent ([45f3b9c](https://github.com/arturwojnar/hermes/commit/45f3b9c6a590889215f5a80ad75d36d81d72e129))
+
+# 1.0.0-alpha.2 (2024-04-01)
+
+### Bug Fixes
+
+- fixed the build of hermes-mongodb to keep src files directly under the root build folder ([c3a372e](https://github.com/arturwojnar/hermes/commit/c3a372e4672c9e85d7881a415cc1a0464686c5ec))
+
+# 1.0.0-alpha.1 (2024-03-25)
+
+# 1.0.0-alpha.0 (2024-03-25)
+
+### Bug Fixes
+
+- removed MongoDB from the CJS build ([b6c8ac0](https://github.com/arturwojnar/hermes/commit/b6c8ac0c0cf30d6562a15a3cb391890a7223fffd))
+
+### Features
+
+- switching to monorepo ([62a629c](https://github.com/arturwojnar/hermes/commit/62a629cc6b8e3ce40e9d413355e5a6cf5044204a))
+
 ## [1.0.0-alpha.3](https://github.com/arturwojnar/hermes/compare/v1.0.0-alpha.2...v1.0.0-alpha.3) (2024-04-05)
 
 ### Features
