@@ -16,7 +16,7 @@ const options = [
         sourcemap: true,
       },
       {
-        file: 'lib/index.esm.js', // Output file for ESM
+        file: 'lib/index.mjs', // Output file for ESM with .mjs extension
         format: 'es',
         sourcemap: true,
       },

@@ -50,6 +50,7 @@ type Stop = () => Promise<void>
  * @param sessionOrCallback -   An existing `session` with which the event(s) should be saved
  *                              <br />or {SaveWithEventCallback} to persist additional data within the callback's session instead.
  *                              <br />If not provided, then the event(s) will be persisted with a new session.
+ * @template Event              Type of an event that can be published, e.g `type Event = AssignTask | CompleteTask | CreateTask | ...`.
  * @returns An empty promise.
  * @example
  *  await outbox.publish(event, async (session, db) => {
@@ -126,6 +127,7 @@ type NowFunction = () => Date
  * @param shouldDisposeOnSigterm -      Indicates whether the `OutboxConsumer` should register a cleaning callback on `SIGTERM` and `SIGINT`.
  * @param onFailedPublish -             A callback fired on a failed publish.
  * @param onDbError -                   A callback failed on an error related to the database.
+ * @template Event -                    Events handled by the `OutboxConsumer`. The type can be limited with a discrimitation union.
  * @template Event -                    Events handled by the `OutboxConsumer`. The type can be limited with a discrimitation union.
  * @example
  *  const outbox = createOutboxConsumer<Event1 | Event2>({

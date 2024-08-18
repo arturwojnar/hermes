@@ -40,12 +40,12 @@
   "exports": {
     ".": {
       "import": {
-        "types": "./lib/index.d.mts",
+        "types": "./lib/index.d.ts",
         "default": "./lib/index.mjs"
       },
       "require": {
         "types": "./lib/index.d.ts",
-        "default": "./lib/index.js"
+        "default": "./lib/index.cjs.js"
       }
     }
   },
@@ -61,6 +61,6 @@
   },
   "devDependencies": {
     "@jest/globals": "~29.7.0",
-    "ts-essentials": "~10.0.1"
+    "ts-essentials": "~10.0.2"
   }
 }
