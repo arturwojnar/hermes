@@ -1,6 +1,6 @@
 {
   "name": "@arturwojnar/hermes-mongodb",
-  "version": "1.0.0-alpha.5",
+  "version": "1.0.0-alpha.6",
   "description": "Production-Ready TypeScript Outbox Pattern for MongoDB",
   "scripts": {
     "build": "rollup -c",
