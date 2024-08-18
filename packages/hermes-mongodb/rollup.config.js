@@ -11,7 +11,7 @@ const options = [
     input: 'src/index.ts', // Entry point for your library
     output: [
       {
-        file: 'lib/index.cjs.js', // Output file for CommonJS
+        file: 'lib/index.cjs', // Output file for CommonJS
         format: 'cjs',
         sourcemap: true,
       },

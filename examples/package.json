@@ -2,7 +2,7 @@
   "name": "no-scaling",
   "version": "1.0.0",
   "description": "Example for no-scaling option",
-  "main": "lib/index.js",
+  "main": "./lib/index.cjs",
   "author": "",
   "license": "ISC",
   "scripts": {
