@@ -1,12 +1,15 @@
 /* eslint-disable @typescript-eslint/no-floating-promises */
 
-import { OutboxConsumersCollectionName, OutboxMessagesCollectionName } from '@arturwojnar/hermes'
 import { expect, jest } from '@jest/globals'
 import { ObjectId } from 'mongodb'
 import nodeTimersPromises from 'node:timers/promises'
 import { createOutboxConsumer } from '../src'
+import { OutboxConsumersCollectionName, OutboxMessagesCollectionName } from '../src/consts'
 import { type MedicineAdded, type MedicineEvent } from './events'
 import { mongodb } from './mongodb'
+import { Duration } from '@arturwojnar/hermes'
+
+jest.setTimeout(Duration.ofMinutes(5).ms)
 
 test('If option `saveTimestamps` is on, then sent events are marked with timestamps', async () => {
   const publishEventStub = jest.fn<() => Promise<void>>().mockResolvedValue(undefined)

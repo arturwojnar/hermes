@@ -1,8 +1,10 @@
 import { Collection, type ResumeToken } from 'mongodb'
 import { type PipelineStage } from 'mongoose'
 import { type OutboxMessageModel, type OutboxMessageStream } from './typings'
+import { ChangeStreamFullDocumentValuePolicy } from './versionPolicies'
 
 const createChangeStream = <Event>(
+  getFullDocumentValue: ChangeStreamFullDocumentValuePolicy,
   messages: Collection<OutboxMessageModel<Event>>,
   partitionKey: string,
   resumeToken?: ResumeToken,
@@ -16,7 +18,7 @@ const createChangeStream = <Event>(
     },
   ]
   return messages.watch<OutboxMessageModel<Event>, OutboxMessageStream<Event>>(pipeline, {
-    fullDocument: 'whenAvailable',
+    fullDocument: getFullDocumentValue(),
     startAfter: resumeToken,
   })
 }

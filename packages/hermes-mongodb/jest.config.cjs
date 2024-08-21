@@ -14,7 +14,7 @@ module.exports = {
       },
     ],
   },
-  testMatch: ['**/test/*.test.ts'],
+  testMatch: ['**/*/*.test.ts'],
   testEnvironment: 'node',
   testTimeout: 20000,
   moduleNameMapper: {

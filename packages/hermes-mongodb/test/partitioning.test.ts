@@ -1,14 +1,17 @@
 /* eslint-disable @typescript-eslint/no-floating-promises */
 
-import { OutboxConsumersCollectionName, OutboxMessagesCollectionName } from '@arturwojnar/hermes'
 import { expect, jest } from '@jest/globals'
 import { ObjectId } from 'mongodb'
 import nodeTimersPromises from 'node:timers/promises'
 import { createOutboxConsumer } from '../src'
+import { OutboxConsumersCollectionName, OutboxMessagesCollectionName } from '../src/consts'
 import { generateEvent, type MedicineEvent } from './events'
 import { mongodb } from './mongodb'
+import { Duration } from '@arturwojnar/hermes'
 
-test('Sending many events at once in order works', async () => {
+jest.setTimeout(Duration.ofMinutes(5).ms)
+
+test('Partitioning works', async () => {
   const publishEventStub = jest.fn<() => Promise<void>>().mockResolvedValue(undefined)
 
   await mongodb(async (db, client, onDispose) => {

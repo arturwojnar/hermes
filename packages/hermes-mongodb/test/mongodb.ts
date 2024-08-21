@@ -9,7 +9,7 @@ let instances = 0
 
 export const mongodb = async (
   test: (db: Db, client: MongoClient, onDispose: (fn: () => Promise<void>) => void) => Promise<void | never>,
-  version = '7.0.5',
+  version = '7.0.0',
 ) => {
   if (!replSet || !connection) {
     replSet = await MongoMemoryReplSet.create({

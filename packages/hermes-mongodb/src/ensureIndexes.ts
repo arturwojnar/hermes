@@ -1,5 +1,5 @@
-import { OutboxConsumersCollectionName } from '@arturwojnar/hermes'
 import { Db } from 'mongodb'
+import { OutboxConsumersCollectionName } from './consts'
 import { type OutboxConsumerModel } from './typings'
 
 const ensureIndexes = async (db: Db) => {

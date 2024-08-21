@@ -1,18 +1,13 @@
-import {
-  CancellationPromise,
-  OutboxMessagesCollectionName,
-  addDisposeOnSigterm,
-  assertDate,
-  isNil,
-  swallow,
-} from '@arturwojnar/hermes'
+import { CancellationPromise, addDisposeOnSigterm, assertDate, isNil, swallow } from '@arturwojnar/hermes'
 import { ClientSession, Db, MongoClient, ObjectId } from 'mongodb'
 import { setTimeout } from 'node:timers/promises'
 import { noop } from 'ts-essentials'
+import { OutboxMessagesCollectionName } from './consts'
 import { createChangeStream } from './createChangeStream'
 import { ensureIndexes } from './ensureIndexes'
 import { getConsumer } from './getConsumer'
 import { type ConsumerCreationParams, type OutboxConsumer, type OutboxMessageModel } from './typings'
+import { generateVersionPolicies } from './versionPolicies'
 
 /**
  * OutboxConsumer is rensposible for consuming events from one partition (`partitionKey` option)
@@ -67,13 +62,22 @@ export const createOutboxConsumer = <Event>(params: ConsumerCreationParams<Event
 
   return {
     async start() {
+      const { supportedVersionCheckPolicy, changeStreamFullDocumentValuePolicy } = await generateVersionPolicies(db)
+
+      supportedVersionCheckPolicy()
+
       await ensureIndexes(db)
 
       await shouldStopPromise
       shouldStopPromise = new CancellationPromise()
 
       const consumer = await getConsumer(db, partitionKey)
-      const watchCursor = createChangeStream<Event>(messages, partitionKey, consumer.resumeToken)
+      const watchCursor = createChangeStream<Event>(
+        changeStreamFullDocumentValuePolicy,
+        messages,
+        partitionKey,
+        consumer.resumeToken,
+      )
       const _waitUntilEventIsSent = async (event: Event) => {
         let published = false
 

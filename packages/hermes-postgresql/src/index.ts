@@ -163,7 +163,7 @@ export class OutboxConsumer<Event> implements IOutboxConsumer<Event> {
 
     return async () => {
       // unsubscribe()
-      await sql.end({ timeout: Duration.ofSeconds(5) })
+      await sql.end({ timeout: Duration.ofSeconds(5).ms })
     }
   }
 
@@ -198,7 +198,7 @@ const test = async () => {
   let i = 0
 
   while (++i) {
-    await setTimeout(Duration.ofSeconds(5))
+    await setTimeout(Duration.ofSeconds(5).ms)
     const json = { name: 'AddTest' }
     await sql`INSERT INTO outbox (event_type, data) VALUES('AddTest-${sql(i.toString())}', ${sql.json(json)})`
   }

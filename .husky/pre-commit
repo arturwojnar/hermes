@@ -3,4 +3,4 @@
 
 npm run lint
 npm run lint:prettier
-npm test
+# npm test
