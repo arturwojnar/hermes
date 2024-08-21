@@ -3,6 +3,12 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [1.0.0-alpha.7](https://github.com/arturwojnar/hermes/compare/@arturwojnar/hermes-postgresql@1.0.0-alpha.6...@arturwojnar/hermes-postgresql@1.0.0-alpha.7) (2024-08-21)
+
+### Features
+
+- support for the mongodb 5 and 6, 7 and 8-rc.x ([1a03779](https://github.com/arturwojnar/hermes/commit/1a03779414e38ec4324303f4b8d38cfb404f5fcd))
+
 # [1.0.0-alpha.6](https://github.com/arturwojnar/hermes/compare/@arturwojnar/hermes-postgresql@1.0.0-alpha.5...@arturwojnar/hermes-postgresql@1.0.0-alpha.6) (2024-08-18)
 
 **Note:** Version bump only for package @arturwojnar/hermes-postgresql
