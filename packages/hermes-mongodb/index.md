@@ -4,6 +4,15 @@
 npm i @arturwojnar/hermes @arturwojnar/hermes-mongodb
 ```
 
+## 😍 Supported versions of the MongoDB
+
+➡️ **5**.x.x 😙\
+➡️ **6**.x.x 😚\
+➡️ **7**.x.x 😛\
+➡️ **8**.0.0-rc.x 😎
+
+If you don't belive it, check how these☝️ versions are covered by tests [here](https://github.com/arturwojnar/hermes/blob/main/packages/hermes-mongodb/test/simple.test.ts#L14)!
+
 ## 📒 API
 
 <a href="modules.html">See the full docs.</a>
