@@ -42,10 +42,10 @@ features:
   
   <div class="clients">
     <a href="https://www.orikami.ai/" target="_blank" class="client" title="Orikami">
-      <img src="./logo_orikami.svg" alt="Orikami Logo" class="orikami" />
+      <img src="./public/logo_orikami.svg" alt="Orikami Logo" class="orikami" />
     </a>
     <a href="https://revolve.healthcare/" target="_blank" class="client" title="Revolve Healthcare">
-      <img src="./revolve_logo.svg" alt="Revolve Logo" class="revovle" />
+      <img src="./public/revolve_logo.svg" alt="Revolve Logo" class="revovle" />
     </a>
   </div>
 </div>
