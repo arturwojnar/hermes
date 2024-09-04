@@ -151,3 +151,30 @@
     padding: 0 0.5em;
   }
 }
+
+.usedBy {
+  width: 100%;
+  text-align: center;
+  margin-top: 2em;
+}
+
+.usedBy .clients {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 1em;
+}
+
+.usedBy .clients .client {
+  /* flex: 1 0 auto; */
+}
+
+.usedBy .clients .revole:hover path {
+  filter: drop-shadow( 3px 3px 2px rgba(0, 0, 0, .7));
+  fill: #fce57e !important;
+  stroke: #fce57e !important;
+}
+
+.usedBy .trustedBy {
+  user-select: none;
+}

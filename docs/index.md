@@ -37,6 +37,19 @@ features:
 <i>"Hermes is the god of reliable deliveries. His two insignias are an outbox and a letter. Just write a message, put it into an envoy, and put it in the box. That's it! You don't need prayers, keeping crossed fingers and hope. Your message will be delivered for sure! Hermes is on it!</i>
 </div>
 
+<div class="usedBy">
+  <span class="trustedBy">Trusted by</span>
+  
+  <div class="clients">
+    <a href="https://www.orikami.ai/" target="_blank" class="client" title="Orikami">
+      <img src="./logo_orikami.svg" alt="Orikami Logo" class="orikami" />
+    </a>
+    <a href="https://revolve.healthcare/" target="_blank" class="client" title="Revolve Healthcare">
+      <img src="./revolve_logo.svg" alt="Revolve Logo" class="revovle" />
+    </a>
+  </div>
+</div>
+
 <div class="badges">
 
 [![Build and test](https://github.com/arturwojnar/hermes/actions/workflows/build-and-test.yaml/badge.svg?branch=main)](https://github.com/arturwojnar/hermes/actions/workflows/build-and-test.yaml)
