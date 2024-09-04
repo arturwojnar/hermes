@@ -94,12 +94,14 @@ type SaveWithEventCallback = (session: ClientSession, db: Db, client: MongoClien
  *
  * @param start -   Starts the `OutboxConsumer` instance. It returns back when it starts listen to events.
  * @param publish - Function to publish an event or events. Use it to ensure your events sending reliability.
+ * @param withScope - You can scope all `publish` calls to a new transaction.
  *
  * @template Event - Events handled by the `OutboxConsumer`. The type can be limited with a discrimitation union.
  */
-type OutboxConsumer<Event> = {
+type OutboxConsumer<Event extends OutboxEvent> = {
   start: Start
   publish: Publish<Event>
+  withScope: WithScope<Event>
 }
 
 /**
@@ -127,7 +129,6 @@ type NowFunction = () => Date
  * @param shouldDisposeOnSigterm -      Indicates whether the `OutboxConsumer` should register a cleaning callback on `SIGTERM` and `SIGINT`.
  * @param onFailedPublish -             A callback fired on a failed publish.
  * @param onDbError -                   A callback failed on an error related to the database.
- * @template Event -                    Events handled by the `OutboxConsumer`. The type can be limited with a discrimitation union.
  * @template Event -                    Events handled by the `OutboxConsumer`. The type can be limited with a discrimitation union.
  * @example
  *  const outbox = createOutboxConsumer<Event1 | Event2>({
@@ -172,15 +173,50 @@ type ConsumerCreationParams<Event> = {
   now?: NowFunction
 }
 
+/**
+ * `OutboxScope` describes a parameter of the `withScope` method of the `OutboxConsumer`
+ *
+ * @typedef {OutboxScope}
+ * @template {OutboxEvent} Event - Type of an event that can be published, e.g `type Event = AssignTask | CompleteTask | CreateTask | ...`.
+ */
+type OutboxScope<Event extends OutboxEvent> = {
+  session: ClientSession
+  client: MongoClient
+  publish: (event: Event | Event[]) => Promise<void>
+}
+
+/**
+ * `OutboxEvent`.
+ * No requirements about the shape of event.
+ */
+interface OutboxEvent {}
+
+/**
+ * `WithScope` method creates a new MongoDB transaction and bounds `publish` calls to this transaction.
+ * So, you don't have to care about passing a `session` to `publish`, but still you have to remember about that for MongoDB operations.
+ * Usefull, when you don't save any data but you send many events.
+ *
+ * @template Event - Events handled by the `OutboxConsumer`. The type can be limited with a discrimitation union.
+ * @example
+ *  await outbox.withScope(async ({ publish }) => {
+ *    await publish(event1)
+ *    await publish(event2)
+ *  })
+ */
+type WithScope<Event extends OutboxEvent> = (scopeFn: (scope: OutboxScope<Event>) => Promise<void>) => Promise<void>
+
 export {
   type ConsumerCreationParams,
   type ErrorCallback,
   type OutboxConsumer,
   type OutboxConsumerModel,
+  type OutboxEvent,
   type OutboxMessageModel,
   type OutboxMessageStream,
+  type OutboxScope,
   type Publish,
   type SaveWithEventCallback,
   type Start,
   type Stop,
+  type WithScope,
 }

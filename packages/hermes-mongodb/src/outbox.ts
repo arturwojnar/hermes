@@ -6,7 +6,7 @@ import { OutboxMessagesCollectionName } from './consts'
 import { createChangeStream } from './createChangeStream'
 import { ensureIndexes } from './ensureIndexes'
 import { getConsumer } from './getConsumer'
-import { type ConsumerCreationParams, type OutboxConsumer, type OutboxMessageModel } from './typings'
+import { type ConsumerCreationParams, type OutboxConsumer, type OutboxEvent, type OutboxMessageModel } from './typings'
 import { generateVersionPolicies } from './versionPolicies'
 
 /**
@@ -17,7 +17,9 @@ import { generateVersionPolicies } from './versionPolicies'
  * @param params - `OutboxConsumer` configuration.
  * @returns An `OutboxConsumer` instance.
  */
-export const createOutboxConsumer = <Event>(params: ConsumerCreationParams<Event>): OutboxConsumer<Event> => {
+export const createOutboxConsumer = <Event extends OutboxEvent>(
+  params: ConsumerCreationParams<Event>,
+): OutboxConsumer<Event> => {
   const { client, db, publish: _publish } = params
   const partitionKey = params.partitionKey || 'default'
   const saveTimestamps = params.saveTimestamps || false
@@ -161,6 +163,18 @@ export const createOutboxConsumer = <Event>(params: ConsumerCreationParams<Event
           })
         })
       }
+    },
+
+    async withScope(scopeFn) {
+      return await client.withSession((session) =>
+        session.withTransaction(async (session) => {
+          const publish = async (event: Event | Event[]) => {
+            await addMessage(event, partitionKey, session)
+          }
+
+          return await scopeFn({ publish, session, client })
+        }),
+      )
     },
   }
 }
