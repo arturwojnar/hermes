@@ -1,6 +1,6 @@
 // https://www.postgresql.org/docs/16/protocol-replication.html#PROTOCOL-REPLICATION-XLOGDATA
 
-import { Bytes } from './types'
+import { Bytes } from './types.js'
 
 /*
  * Byte1('w'). Identifies the message as WAL data.

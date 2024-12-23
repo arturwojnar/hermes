@@ -1,11 +1,11 @@
 import { assertNever } from '@arturwojnar/hermes'
-import { XLogData_WalRecordStartByteNumber } from './consts'
-import { processBeginMessage } from './processBeginMessage'
-import { processCommitMessage } from './processCommitMessage'
-import { processInsertMessage } from './processInsertMessage'
-import { processPrimaryKeepAliveMessage } from './processPrimaryKeepAliveMessage'
-import type { OnDataProcessingResult } from './types'
-import { MessageType, parseMessageType, parseTopLevelType, TopLevelType } from './types'
+import { XLogData_WalRecordStartByteNumber } from './consts.js'
+import { processBeginMessage } from './processBeginMessage.js'
+import { processCommitMessage } from './processCommitMessage.js'
+import { processInsertMessage } from './processInsertMessage.js'
+import { processPrimaryKeepAliveMessage } from './processPrimaryKeepAliveMessage.js'
+import type { OnDataProcessingResult } from './types.js'
+import { MessageType, parseMessageType, parseTopLevelType, TopLevelType } from './types.js'
 
 const onData = (message: Buffer): OnDataProcessingResult => {
   const topLevelType = parseTopLevelType(String.fromCharCode(message[0]))

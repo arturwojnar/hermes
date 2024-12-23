@@ -1,6 +1,6 @@
 import { Db } from 'mongodb'
-import { OutboxConsumersCollectionName } from './consts'
-import { type OutboxConsumerModel } from './typings'
+import { OutboxConsumersCollectionName } from './consts.js'
+import { type OutboxConsumerModel } from './typings.js'
 
 const ensureIndexes = async (db: Db) => {
   const consumers = db.collection<OutboxConsumerModel>(OutboxConsumersCollectionName)

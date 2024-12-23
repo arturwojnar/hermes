@@ -1,8 +1,8 @@
-import { toTimestamp } from '../common/helpers'
-import { constructLsn } from '../common/lsn'
-import { offset } from '../common/offset'
-import type { OnDataProcessingResult } from './types'
-import { Bytes, MessageType, TopLevelType } from './types'
+import { toTimestamp } from '../common/helpers.js'
+import { constructLsn } from '../common/lsn.js'
+import { offset } from '../common/offset.js'
+import type { OnDataProcessingResult } from './types.js'
+import { Bytes, MessageType, TopLevelType } from './types.js'
 
 /*
  * https://www.postgresql.org/docs/current/protocol-logicalrep-message-formats.html#PROTOCOL-LOGICALREP-MESSAGE-FORMATS-INSERT

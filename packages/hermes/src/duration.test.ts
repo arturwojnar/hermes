@@ -1,5 +1,5 @@
 import { describe, expect, test } from '@jest/globals'
-import { Duration } from './duration'
+import { Duration } from './duration.js'
 
 describe('Duration', () => {
   test('ofHours creates a Duration with correct milliseconds', () => {

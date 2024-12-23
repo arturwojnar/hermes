@@ -2,7 +2,7 @@
   "extends": "../../tsconfig.eslint.json",
   "include": ["./src/**/*", "test/**/*"],
   "compilerOptions": {
-    "module": "nodenext",
+    "module": "NodeNext",
     "baseUrl": ".",
     "noEmit": false,
     "composite": true,

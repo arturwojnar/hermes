@@ -1,5 +1,5 @@
-import type { Publish } from '../../common/types'
-import type { Transaction } from './transaction'
+import type { Publish } from '../../common/types.js'
+import type { Transaction } from './transaction.js'
 
 const commitTransaction = async (publish: Publish, transaction: Transaction) => {
   try {

@@ -1,5 +1,5 @@
-import type { OnDataProcessingResult } from './types'
-import { Bytes, MessageType, TopLevelType } from './types'
+import type { OnDataProcessingResult } from './types.js'
+import { Bytes, MessageType, TopLevelType } from './types.js'
 
 const keepAliveResult = (shouldPong: boolean): OnDataProcessingResult => ({
   topLevelType: TopLevelType.PrimaryKeepaliveMessage,

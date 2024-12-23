@@ -1,7 +1,7 @@
-import { toTimestamp } from '../common/helpers'
-import { offset } from '../common/offset'
-import type { OnDataProcessingResult } from './types'
-import { Bytes, MessageType, TopLevelType } from './types'
+import { toTimestamp } from '../common/helpers.js'
+import { offset } from '../common/offset.js'
+import type { OnDataProcessingResult } from './types.js'
+import { Bytes, MessageType, TopLevelType } from './types.js'
 
 /*
  * Byte1('C'). Identifies the message as a commit message.

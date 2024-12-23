@@ -1,7 +1,7 @@
 import { Collection, type ResumeToken } from 'mongodb'
 import { type PipelineStage } from 'mongoose'
-import { type OutboxMessageModel, type OutboxMessageStream } from './typings'
-import { ChangeStreamFullDocumentValuePolicy } from './versionPolicies'
+import { type OutboxMessageModel, type OutboxMessageStream } from './typings.js'
+import { ChangeStreamFullDocumentValuePolicy } from './versionPolicies.js'
 
 const createChangeStream = <Event>(
   getFullDocumentValue: ChangeStreamFullDocumentValuePolicy,

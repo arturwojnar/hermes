@@ -1,4 +1,4 @@
-import { Flavour } from './core/typing/flavour'
+import { Flavour } from './core/typing/flavour.js'
 
 export type PositiveInteger<T extends number = number> = `${T}` extends `-${string}` | `${string}.${string}`
   ? never

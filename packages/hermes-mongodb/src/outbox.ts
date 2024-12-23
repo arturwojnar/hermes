@@ -2,12 +2,17 @@ import { CancellationPromise, addDisposeOnSigterm, assertDate, isNil, swallow } 
 import { ClientSession, Db, MongoClient, ObjectId } from 'mongodb'
 import { setTimeout } from 'node:timers/promises'
 import { noop } from 'ts-essentials'
-import { OutboxMessagesCollectionName } from './consts'
-import { createChangeStream } from './createChangeStream'
-import { ensureIndexes } from './ensureIndexes'
-import { getConsumer } from './getConsumer'
-import { type ConsumerCreationParams, type OutboxConsumer, type OutboxEvent, type OutboxMessageModel } from './typings'
-import { generateVersionPolicies } from './versionPolicies'
+import { OutboxMessagesCollectionName } from './consts.js'
+import { createChangeStream } from './createChangeStream.js'
+import { ensureIndexes } from './ensureIndexes.js'
+import { getConsumer } from './getConsumer.js'
+import {
+  type ConsumerCreationParams,
+  type OutboxConsumer,
+  type OutboxEvent,
+  type OutboxMessageModel,
+} from './typings.js'
+import { generateVersionPolicies } from './versionPolicies.js'
 
 /**
  * OutboxConsumer is rensposible for consuming events from one partition (`partitionKey` option)

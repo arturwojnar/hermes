@@ -1,7 +1,7 @@
 import assert from 'assert'
 import { Db, ObjectId, type Document } from 'mongodb'
-import { type OutboxConsumerModel } from './typings'
-import { OutboxConsumersCollectionName } from './consts'
+import { type OutboxConsumerModel } from './typings.js'
+import { OutboxConsumersCollectionName } from './consts.js'
 
 type ConsumerActiveRecord<T extends Document, K extends keyof T = keyof T> = {
   [key in K]: T[key]

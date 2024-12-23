@@ -1,7 +1,7 @@
 import { NotSupportedMongoVersionError } from '@arturwojnar/hermes'
 import { describe, expect, it, jest } from '@jest/globals'
 import { Db } from 'mongodb'
-import { BuildInfo, generateVersionPolicies } from './versionPolicies'
+import { BuildInfo, generateVersionPolicies } from './versionPolicies.js'
 
 describe('generateVersionPolicies', () => {
   const mockBuildInfo = (version: string): BuildInfo => ({

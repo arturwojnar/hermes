@@ -1,8 +1,8 @@
 import assert from 'assert'
-import type { Offset } from '../common/offset'
-import { offset } from '../common/offset'
-import type { OnDataProcessingResult } from './types'
-import { Bytes, MessageType, TopLevelType } from './types'
+import type { Offset } from '../common/offset.js'
+import { offset } from '../common/offset.js'
+import type { OnDataProcessingResult } from './types.js'
+import { Bytes, MessageType, TopLevelType } from './types.js'
 
 const readIntFn = {
   '1': 'readUInt8' as const,

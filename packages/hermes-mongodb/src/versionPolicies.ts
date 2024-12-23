@@ -1,6 +1,6 @@
 import { NotSupportedMongoVersionError, parseSemVer } from '@arturwojnar/hermes'
 import { Db, Document } from 'mongodb'
-import { SupportedMajorMongoVersions } from './consts'
+import { SupportedMajorMongoVersions } from './consts.js'
 
 // https://www.mongodb.com/docs/manual/reference/command/buildInfo/
 export type BuildInfo = {

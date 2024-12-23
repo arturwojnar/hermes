@@ -1,4 +1,4 @@
-export { assertDate } from './assert'
-export { type Flavour, type WithFlavour, type WithoutFlavour } from './flavour'
-export { parseNonEmptyString, type NonEmptyString } from './NonEmptyString'
-export { assertNever } from './utils'
+export { assertDate } from './assert.js'
+export { type Flavour, type WithFlavour, type WithoutFlavour } from './flavour.js'
+export { parseNonEmptyString, type NonEmptyString } from './NonEmptyString.js'
+export { assertNever } from './utils.js'

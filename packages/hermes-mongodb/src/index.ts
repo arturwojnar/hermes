@@ -1,4 +1,4 @@
-export { createOutboxConsumer } from './outbox'
+export { createOutboxConsumer } from './outbox.js'
 export {
   type ConsumerCreationParams,
   type ErrorCallback,
@@ -10,4 +10,4 @@ export {
   type SaveWithEventCallback,
   type Start,
   type Stop,
-} from './typings'
+} from './typings.js'

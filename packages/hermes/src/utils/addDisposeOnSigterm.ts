@@ -1,4 +1,4 @@
-import { swallow } from './utils'
+import { swallow } from './utils.js'
 
 export const addDisposeOnSigterm = (fn: () => Promise<void>) => {
   process.on('SIGTERM', () => {

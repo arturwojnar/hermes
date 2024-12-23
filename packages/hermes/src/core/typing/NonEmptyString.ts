@@ -1,5 +1,5 @@
-import { AssertionError } from '../errors'
-import { Flavour } from './flavour'
+import { AssertionError } from '../errors.js'
+import { Flavour } from './flavour.js'
 
 export type NonEmptyString<T extends string = string> = Flavour<string, 'NonEmptyString'> & {
   readonly __nonEmptyStringType?: T

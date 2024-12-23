@@ -1,8 +1,8 @@
 import type { Writable } from 'node:stream'
 
-import { toServerSystemClock } from '../common/helpers'
-import type { Lsn } from '../common/lsn'
-import { convertLsnToBigInt } from '../common/lsn'
+import { toServerSystemClock } from '../common/helpers.js'
+import type { Lsn } from '../common/lsn.js'
+import { convertLsnToBigInt } from '../common/lsn.js'
 
 // Standby status update (F)
 // https://www.postgresql.org/docs/10/protocol-replication.html
