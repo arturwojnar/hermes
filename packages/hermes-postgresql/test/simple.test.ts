@@ -1,8 +1,6 @@
-/* eslint-disable @typescript-eslint/no-floating-promises */
-
 // import { OutboxConsumersCollectionName, OutboxMessagesCollectionName } from '../src/consts'
 import { expect, jest, test } from '@jest/globals'
-import { postgres } from './postgresql'
+import { postgres } from './postgresql.js'
 
 jest.setTimeout(3 * 60 * 1000)
 

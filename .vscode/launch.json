@@ -65,6 +65,19 @@
         "--verbose"
       ],
       "internalConsoleOptions": "openOnSessionStart"
+    },
+    {
+      "cwd": "${workspaceFolder}/packages/hermes-postgresql",
+      "console": "integratedTerminal",
+      "internalConsoleOptions": "neverOpen",
+      "name": "postgres",
+      "program": "${workspaceFolder}/packages/hermes-postgresql/index.ts",
+      "request": "launch",
+      "restart": true,
+      "runtimeExecutable": "${workspaceFolder}/examples/node_modules/.bin/nodemon",
+      "skipFiles": ["<node_internals>/**"],
+      "type": "node",
+      "outputCapture": "std"
     }
   ]
 }

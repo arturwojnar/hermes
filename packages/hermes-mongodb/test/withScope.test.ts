@@ -1,5 +1,3 @@
-/* eslint-disable @typescript-eslint/no-floating-promises */
-
 import { Duration, swallow } from '@arturwojnar/hermes'
 import { expect, jest } from '@jest/globals'
 import nodeTimersPromises from 'node:timers/promises'

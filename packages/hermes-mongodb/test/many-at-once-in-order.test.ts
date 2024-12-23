@@ -1,13 +1,11 @@
-/* eslint-disable @typescript-eslint/no-floating-promises */
-
-import { expect, jest } from '@jest/globals'
+import { Duration } from '@arturwojnar/hermes'
+import { describe, expect, jest, test } from '@jest/globals'
 import { ObjectId } from 'mongodb'
 import nodeTimersPromises from 'node:timers/promises'
-import { createOutboxConsumer } from '../src'
-import { OutboxConsumersCollectionName, OutboxMessagesCollectionName, SupportedMongoVersions } from '../src/consts'
-import { generateEvent, type MedicineEvent } from './events'
-import { mongodb } from './mongodb'
-import { Duration } from '@arturwojnar/hermes'
+import { OutboxConsumersCollectionName, OutboxMessagesCollectionName, SupportedMongoVersions } from '../src/consts.js'
+import { generateEvent, type MedicineEvent } from './events.js'
+import { createOutboxConsumer } from './index.js'
+import { mongodb } from './mongodb.js'
 
 jest.setTimeout(Duration.ofMinutes(5).ms)
 

@@ -6,10 +6,12 @@
   "scripts": {
     "build": "rollup -c",
     "build:ts": "tsc -p tsconfig.build.json",
+    "build:watch": "tsc -p tsconfig.build.json --watch --preserveWatchOutput",
     "clean": "rm -rf ./lib/",
     "lint:eslint": "eslint 'src/**/*.ts'",
     "lint:prettier": "prettier --check \"**/**/!(*.d).{ts,json,md}\"",
-    "lint-fix": "eslint --fix -f unix \"src/**/*.{ts,tsx}\"",
+    "fix:prettier": "prettier --write \"**/**/!(*.d).{ts,json,md}\"",
+    "lint-fix": "eslint --fix \"src/**/*.{ts,tsx}\"",
     "prepare": "husky",
     "test": "node --experimental-vm-modules ../../node_modules/.bin/jest --colors --coverage --verbose --maxConcurrency=5 --config=jest.config.cjs",
     "typecheck": "tsc --noEmit",
@@ -63,14 +65,16 @@
   },
   "devDependencies": {
     "@jest/globals": "~29.7.0",
-    "@testcontainers/postgresql": "~10.11.0",
-    "testcontainers": "~10.11.0",
-    "ts-essentials": "~10.0.2"
+    "@testcontainers/postgresql": "~10.15.0",
+    "testcontainers": "~10.15.0",
+    "ts-essentials": "~10.0.3"
   },
   "dependencies": {
-    "postgres": "~3.4.4"
+    "fp-ts": "~2.16.9",
+    "nodemon": "~3.1.7",
+    "postgres": "~3.4.5"
   },
   "peerDependencies": {
-    "@arturwojnar/hermes": ">=1.0.0-alpha.0"
+    "@arturwojnar/hermes": "~1.0.0-alpha.7"
   }
 }

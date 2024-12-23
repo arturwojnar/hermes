@@ -20,13 +20,13 @@ export const mongodb = async (
     ;(async () => {
       let checks = 0
 
-      // eslint-disable-next-line @typescript-eslint/no-unused-vars
+      // -eslint-disable-next-line @typescript-eslint/no-unused-vars
       for await (const _ of setInterval(2000)) {
         if (instances === 0 && checks < 3) {
           checks++
         } else if (instances === 0 && checks >= 3) {
-          connection && (await swallow(connection.close.bind(connection)))
-          replSet && (await swallow(replSet.stop.bind(replSet)))
+          if (connection) await swallow(connection.close.bind(connection))
+          if (replSet) await swallow(replSet.stop.bind(replSet))
           break
         } else {
           checks = 0

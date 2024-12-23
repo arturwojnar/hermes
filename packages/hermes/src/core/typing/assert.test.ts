@@ -1,6 +1,6 @@
-import { expect } from '@jest/globals'
-import { AssertionError } from '../errors'
-import { assertDate } from './assert'
+import { expect, test } from '@jest/globals'
+import { AssertionError } from '../errors.js'
+import { assertDate } from './assert.js'
 
 test(`assertDate throws an AssertionError is the value is not a Date`, () => {
   expect(() => assertDate(1)).toThrowError(AssertionError)

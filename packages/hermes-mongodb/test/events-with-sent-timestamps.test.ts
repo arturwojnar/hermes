@@ -1,5 +1,3 @@
-/* eslint-disable @typescript-eslint/no-floating-promises */
-
 import { expect, jest } from '@jest/globals'
 import { ObjectId } from 'mongodb'
 import nodeTimersPromises from 'node:timers/promises'

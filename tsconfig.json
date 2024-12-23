@@ -2,7 +2,7 @@
   "extends": "./tsconfig.common.json",
   "include": [
     "jest.config.cjs",
-    ".eslintrc.cjs",
+    "eslint.config.js",
     "./packages/*/rollup.config.js",
     "./packages/*/tsconfig.json",
     "packages/hermes/rollup.config.js",
@@ -13,6 +13,7 @@
   "files": [],
   "compilerOptions": {
     "baseUrl": ".",
+    "composite": false,
     "noEmit": true,
     "paths": {
       "@arturwojnar/hermes": ["./packages/hermes/src"],

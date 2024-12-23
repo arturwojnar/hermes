@@ -61,6 +61,6 @@
   },
   "devDependencies": {
     "@jest/globals": "~29.7.0",
-    "ts-essentials": "~10.0.2"
+    "ts-essentials": "~10.0.3"
   }
 }

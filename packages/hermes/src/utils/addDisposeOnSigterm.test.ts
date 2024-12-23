@@ -1,8 +1,6 @@
-/* eslint-disable @typescript-eslint/unbound-method */
-
-import { afterAll, beforeAll, describe, expect, jest } from '@jest/globals'
+import { afterAll, beforeAll, describe, expect, jest, test } from '@jest/globals'
 import { setTimeout } from 'node:timers/promises'
-import { addDisposeOnSigterm } from './addDisposeOnSigterm'
+import { addDisposeOnSigterm } from './addDisposeOnSigterm.js'
 
 describe('addDisposeOnSigterm', () => {
   const _processOn = process.on

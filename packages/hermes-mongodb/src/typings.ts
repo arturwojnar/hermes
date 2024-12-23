@@ -189,7 +189,7 @@ type OutboxScope<Event extends OutboxEvent> = {
  * `OutboxEvent`.
  * No requirements about the shape of event.
  */
-interface OutboxEvent {}
+type OutboxEvent = object
 
 /**
  * `WithScope` method creates a new MongoDB transaction and bounds `publish` calls to this transaction.

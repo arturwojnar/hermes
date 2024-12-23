@@ -1,5 +1,5 @@
-import { expect } from '@jest/globals'
-import { AssertionError, HermesError, HermesErrorCode, NotSupportedMongoVersionError } from './errors'
+import { expect, test } from '@jest/globals'
+import { AssertionError, HermesError, HermesErrorCode, NotSupportedMongoVersionError } from './errors.js'
 
 test(`HermesError is instance of Error`, () => {
   expect(HermesError.prototype.name).toEqual('Error')

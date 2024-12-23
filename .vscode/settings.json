@@ -31,5 +31,6 @@
     }
   ],
   "nodejs-testing.exclude": ["**/node_modules/**"],
-  "nodejs-testing.include": ["./lib"]
+  "nodejs-testing.include": ["./lib"],
+  "typescript.preferences.importModuleSpecifier": "relative"
 }

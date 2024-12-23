@@ -1,14 +1,18 @@
-/* eslint-disable  @typescript-eslint/no-unused-vars */
-import { Duration, noop } from '@arturwojnar/hermes'
+/* -eslint-disable  @typescript-eslint/no-unused-vars */
+import { Duration } from '@arturwojnar/hermes'
 import assert from 'assert'
-import postgres, { Options, PostgresType, Sql } from 'postgres'
-import { setTimeout } from 'timers/promises'
-import { AsyncOrSync } from 'ts-essentials'
-import { LogicalReplicationState, startLogicalReplication } from './logicalReplicationStream.js'
+import console from 'console'
+import type { Options, PostgresType, Sql } from 'postgres'
+import postgres from 'postgres'
+import type { AsyncOrSync } from 'ts-essentials'
+import type { Lsn } from './common/lsn.js'
+import type { EventEnvelope } from './common/types.js'
+import type { LogicalReplicationState } from './subscribeToReplicationSlot/logicalReplicationStream.js'
+import { startLogicalReplication } from './subscribeToReplicationSlot/logicalReplicationStream.js'
 
 type Start = () => Promise<Stop>
 type Stop = () => Promise<void>
-type Publish<Event> = (event: Event | Event[]) => Promise<void>
+type Publish<Event> = (event: EventEnvelope<Event> | EventEnvelope<Event>[]) => Promise<void>
 type IOutboxConsumer<Event> = {
   start: Start
   publish: Publish<Event>
@@ -107,7 +111,7 @@ export class OutboxConsumer<Event> implements IOutboxConsumer<Event> {
 
   async start(): Promise<Stop> {
     const { publish, getOptions } = this._params
-    // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
+
     const sql = (this._sql = this._createClient({
       ...getOptions(),
     }))
@@ -135,6 +139,10 @@ export class OutboxConsumer<Event> implements IOutboxConsumer<Event> {
 
     await migrate(sql)
 
+    const restartLsnResults = await sql<
+      [{ restart_lsn: Lsn }]
+    >`SELECT * FROM pg_replication_slots WHERE slot_name = 'outbox_slot';`
+    const restartLsn = restartLsnResults?.[0]?.restart_lsn || '0/00000000'
     // const { unsubscribe } = await sql.subscribe(
     //   `insert:outbox`,
     //   (row, a) => {
@@ -152,12 +160,12 @@ export class OutboxConsumer<Event> implements IOutboxConsumer<Event> {
     //   },
     // )
     const replicationState: LogicalReplicationState = {
-      lastProcessedLsn: new Uint8Array(),
+      lastProcessedLsn: restartLsn,
       timestamp: new Date(),
       publication: PublicationName,
       slotName: SlotName,
     }
-    startLogicalReplication(replicationState, subscribeSql, noop).catch((error) => {
+    startLogicalReplication(replicationState, subscribeSql, this.publish as any).catch((error) => {
       console.error(error)
     })
 
@@ -166,8 +174,8 @@ export class OutboxConsumer<Event> implements IOutboxConsumer<Event> {
       await sql.end({ timeout: Duration.ofSeconds(5).ms })
     }
   }
-
-  async publish(event: Event | Event[]): Promise<void> {
+  // Publish<Event> = (event: EventEnvelope<Event> | EventEnvelope<Event>[]) => Promise<void>
+  async publish(event: EventEnvelope<Event> | EventEnvelope<Event>[]): Promise<void> {
     await Promise.resolve(event)
   }
 }
@@ -195,13 +203,13 @@ const test = async () => {
     stop().catch(console.error)
   })
 
-  let i = 0
+  const i = 0
 
-  while (++i) {
-    await setTimeout(Duration.ofSeconds(5).ms)
-    const json = { name: 'AddTest' }
-    await sql`INSERT INTO outbox (event_type, data) VALUES('AddTest-${sql(i.toString())}', ${sql.json(json)})`
-  }
+  // while (++i) {
+  //   await setTimeout(Duration.ofSeconds(5).ms)
+  const json = { name: 'AddTest', i }
+  await sql`INSERT INTO outbox (event_type, data) VALUES('AddTest-${sql(i.toString())}', ${sql.json(json)})`
+  // }
 }
 
 ;(async () => {

@@ -1,4 +1,5 @@
-import { parseSemVer } from './utils/semver'
+import { describe, expect, test } from '@jest/globals'
+import { parseSemVer } from './utils/semver.js'
 
 describe('semver', () => {
   test('parses version 12.13.14', () => {

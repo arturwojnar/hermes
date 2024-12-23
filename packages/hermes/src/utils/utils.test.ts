@@ -1,6 +1,6 @@
-import { expect } from '@jest/globals'
+import { expect, test } from '@jest/globals'
 import { noop } from 'ts-essentials'
-import { isNil, swallow } from './utils'
+import { isNil, swallow } from './utils.js'
 
 test(`noop is a function that does nothing`, () => {
   expect(typeof noop).toEqual('function')
