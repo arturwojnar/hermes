@@ -1,10 +1,10 @@
 import { Duration, swallow } from '@arturwojnar/hermes'
-import { expect, jest } from '@jest/globals'
+import { expect, jest, test } from '@jest/globals'
 import nodeTimersPromises from 'node:timers/promises'
-import { createOutboxConsumer } from '../src'
-import { OutboxMessagesCollectionName } from '../src/consts'
-import { MedicineAdded, type MedicineEvent } from './events'
-import { mongodb } from './mongodb'
+import { OutboxMessagesCollectionName } from '../src/consts.js'
+import { createOutboxConsumer } from '../src/index.js'
+import { MedicineAdded, type MedicineEvent } from './events.js'
+import { mongodb } from './mongodb.js'
 
 jest.setTimeout(Duration.ofMinutes(5).ms)
 

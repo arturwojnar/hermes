@@ -3,8 +3,8 @@ import { describe, expect, jest, test } from '@jest/globals'
 import { ObjectId } from 'mongodb'
 import nodeTimersPromises from 'node:timers/promises'
 import { OutboxConsumersCollectionName, OutboxMessagesCollectionName, SupportedMongoVersions } from '../src/consts.js'
+import { createOutboxConsumer } from '../src/index.js'
 import { generateEvent, type MedicineEvent } from './events.js'
-import { createOutboxConsumer } from './index.js'
 import { mongodb } from './mongodb.js'
 
 jest.setTimeout(Duration.ofMinutes(5).ms)

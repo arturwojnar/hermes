@@ -34,7 +34,7 @@
     {
       "args": [
         "-c",
-        "${workspaceFolder}/jest.config.cjs",
+        "${workspaceFolder}/jest.config.js",
         "--maxConcurrency=1",
         "--detectOpenHandles",
         "--colors",
@@ -57,7 +57,7 @@
       "cwd": "${workspaceFolder}",
       "args": [
         "-c",
-        "${workspaceFolder}/packages/hermes-postgresql/jest.config.cjs",
+        "${workspaceFolder}/packages/hermes-postgresql/jest.config.js",
         "--maxConcurrency=1",
         "--runInBand",
         "--detectOpenHandles",

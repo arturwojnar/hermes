@@ -18,7 +18,7 @@ test(`CancellationPromise can be rejected`, async () => {
   expect(promise).toBeInstanceOf(Promise)
   expect(typeof promise.reject).toEqual('function')
 
-  promise.reject('error')
+  promise.reject(new Error('error'))
 
-  await expect(promise).rejects.toBe('error')
+  await expect(promise).rejects.toEqual(new Error('error'))
 })

@@ -7,6 +7,9 @@
     "composite": true,
     "declaration": true,
     "outDir": "docs/lib",
-    "rootDir": "./src"
+    "rootDir": "./src",
+    "paths": {
+      "#src": ["./src"]
+    }
   }
 }

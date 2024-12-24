@@ -99,5 +99,19 @@
   ],
   "dependencies": {
     "tsconfig-paths": "~4.2.0"
+  },
+  "exports": {
+    "@arturwojnar/hermes": {
+      "import": "./packages/hermes/src/index.ts",
+      "types": "./packages/hermes/src/index.ts"
+    },
+    "@arturwojnar/hermes-mongodb": {
+      "import": "./packages/hermes-mongodb/src/index.ts",
+      "types": "./packages/hermes-mongodb/src/index.ts"
+    },
+    "@arturwojnar/hermes-postgresql": {
+      "import": "./packages/hermes-postgresql/src/index.ts",
+      "types": "./packages/hermes-postgresql/src/index.ts"
+    }
   }
 }
