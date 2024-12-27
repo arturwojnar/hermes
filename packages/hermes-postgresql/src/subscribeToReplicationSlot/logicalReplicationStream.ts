@@ -18,7 +18,8 @@ const startLogicalReplication = async <Event>(state: LogicalReplicationState, sq
       `START_REPLICATION SLOT outbox_slot LOGICAL ${location} (proto_version '1', publication_names 'outbox_pub')`,
     )
     .writable()
-  const acknowledge = sendStandbyStatusUpdate(stream, () => state.lastProcessedLsn)
+  const acknowledgeLastLsn = sendStandbyStatusUpdate(stream, () => state.lastProcessedLsn)
+  const acknowledge = sendStandbyStatusUpdate(stream, () => currentTransaction.lsn)
   const commitTransaction = _commitTransaction.bind(undefined, publish)
   const close = async () => {
     if (stream) {
@@ -44,9 +45,12 @@ const startLogicalReplication = async <Event>(state: LogicalReplicationState, sq
 
   const handleResult = async (result: OnDataProcessingResult) => {
     if (result.topLevelType === TopLevelType.PrimaryKeepaliveMessage && result.shouldPong) {
-      acknowledge()
+      acknowledgeLastLsn()
     } else if (result.topLevelType === TopLevelType.XLogData && result.messageType === MessageType.Commit) {
       await commitTransaction(currentTransaction)
+      for (const result of currentTransaction.results) {
+        await sql`UPDATE outbox SET lsn=${currentTransaction.lsn} WHERE position=${result.position}`
+      }
       acknowledge()
       state.lastProcessedLsn = currentTransaction.lsn
       currentTransaction = emptyTransaction(state.lastProcessedLsn)

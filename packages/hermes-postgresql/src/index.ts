@@ -64,7 +64,10 @@ export const migrate = async (sql: Sql) => {
     CREATE TABLE IF NOT EXISTS outbox (
       position    BIGSERIAL     PRIMARY KEY,
       event_type  VARCHAR(250)  NOT NULL,
-      data        JSONB         NOT NULL
+      data        JSONB         NOT NULL,
+      lsn         VARCHAR(50)   NULL,
+      addedAt     TIMESTAMPTZ   DEFAULT NOW() NOT NULL,
+      sentAt      TIMESTAMPTZ   NULL
     );
   `
 
@@ -203,7 +206,7 @@ const test = async () => {
     stop().catch(console.error)
   })
 
-  const i = 0
+  const i = 99999
 
   // while (++i) {
   //   await setTimeout(Duration.ofSeconds(5).ms)

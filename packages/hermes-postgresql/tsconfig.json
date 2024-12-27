@@ -2,14 +2,12 @@
   "extends": "../../tsconfig.eslint.json",
   "include": ["./src/**/*", "test/**/*"],
   "compilerOptions": {
-    "module": "NodeNext",
     "baseUrl": ".",
     "noEmit": false,
     "composite": true,
     "declaration": true,
     "outDir": "./lib",
     "rootDirs": ["./src", "./test"],
-    "lib": ["DOM", "ESNext"],
     "paths": {
       "@arturwojnar/hermes": ["../hermes"],
       "@arturwojnar/hermes-postgresql": ["./"]

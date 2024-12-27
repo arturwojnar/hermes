@@ -1,10 +1,12 @@
-// @ts-check
+import { readFileSync } from 'fs'
+import * as tsjest from 'ts-jest'
 
-const { pathsToModuleNameMapper } = require('ts-jest')
-const { compilerOptions } = require('./tsconfig.json')
+const { pathsToModuleNameMapper } = tsjest
+const tsconfig = JSON.parse(readFileSync('./tsconfig.json', 'utf-8'))
+const paths = tsconfig?.compilerOptions?.paths
 
 /** @type {import('ts-jest').JestConfigWithTsJest} */
-module.exports = {
+export default {
   preset: 'ts-jest/presets/default-esm',
   extensionsToTreatAsEsm: ['.ts'],
   transform: {
@@ -20,7 +22,12 @@ module.exports = {
   testEnvironment: 'node',
   testTimeout: 20000,
   moduleNameMapper: {
-    ...pathsToModuleNameMapper(compilerOptions.paths, { prefix: '<rootDir>' }),
+    ...(paths
+      ? pathsToModuleNameMapper(paths, {
+          prefix: '<rootDir>',
+          useESM: true,
+        })
+      : {}),
     '^(\\.{1,2}/.*)\\.js$': '$1',
   },
   modulePaths: ['<rootDir>'],

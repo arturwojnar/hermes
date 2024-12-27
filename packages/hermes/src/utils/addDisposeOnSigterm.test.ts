@@ -3,7 +3,6 @@ import { setTimeout } from 'node:timers/promises'
 import { addDisposeOnSigterm } from './addDisposeOnSigterm.js'
 
 describe('addDisposeOnSigterm', () => {
-  // eslint-disable-next-line @typescript-eslint/unbound-method
   const _processOn = process.on
 
   beforeAll(() => {
@@ -19,14 +18,13 @@ describe('addDisposeOnSigterm', () => {
     addDisposeOnSigterm(cleanMock)
 
     expect(cleanMock).not.toHaveBeenCalled()
-    // eslint-disable-next-line @typescript-eslint/unbound-method
+
     expect(process.on).toHaveBeenCalledTimes(2)
-    // eslint-disable-next-line @typescript-eslint/unbound-method
+
     expect(process.on).toHaveBeenCalledWith('SIGTERM', expect.any(Function))
 
-    // eslint-disable-next-line @typescript-eslint/unbound-method
     const callback1 = jest.mocked(process.on).mock.calls[0][1]
-    // eslint-disable-next-line @typescript-eslint/unbound-method
+
     const callback2 = jest.mocked(process.on).mock.calls[1][1]
 
     callback1()

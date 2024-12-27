@@ -29,6 +29,11 @@ jobs:
           cache-dependency-path: "./package-lock.json"
 
       - name: Install dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y libssl1.1
+
+      - name: Install NPM dependencies
         run: npm ci
 
       - name: Build TS
