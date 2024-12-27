@@ -1,7 +1,7 @@
 import type { Lsn } from '../../common/lsn.js'
 
 type InsertResult = {
-  position: number
+  position: number | bigint
   eventType: string
   payload: string
 }

@@ -2,20 +2,29 @@
 
 import { noop } from '@arturwojnar/hermes'
 import { pipe } from 'fp-ts/lib/function.js'
-import type { Error, Sql } from 'postgres'
+import type { Error } from 'postgres'
 import type { Publish } from '../common/types.js'
+import { HermesSql } from '../index.js'
 import { onData } from './onData.js'
 import { sendStandbyStatusUpdate } from './sendStandbyStatusUpdate.js'
 import { commitTransaction as _commitTransaction } from './transaction/commitTransaction.js'
-import { addInsert, createTransaction, emptyTransaction } from './transaction/transaction.js'
+import { addInsert, createTransaction, emptyTransaction, Transaction } from './transaction/transaction.js'
 import { MessageType, TopLevelType, type LogicalReplicationState, type OnDataProcessingResult } from './types.js'
 
-const startLogicalReplication = async <Event>(state: LogicalReplicationState, sql: Sql, publish: Publish) => {
+export type LogicalReplicationParams = {
+  state: LogicalReplicationState
+  sql: HermesSql
+  publish: Publish
+  onCommit: (transaction: Transaction) => Promise<void>
+}
+
+const startLogicalReplication = async <Event>(params: LogicalReplicationParams) => {
+  const { state, sql, publish, onCommit } = params
   let currentTransaction = emptyTransaction(state.lastProcessedLsn)
   const location = typeof state.lastProcessedLsn === 'undefined' ? '0/00000000' : state.lastProcessedLsn.toString()
   const stream = await sql
     .unsafe(
-      `START_REPLICATION SLOT outbox_slot LOGICAL ${location} (proto_version '1', publication_names 'outbox_pub')`,
+      `START_REPLICATION SLOT hermes_slot LOGICAL ${location} (proto_version '1', publication_names 'hermes_pub')`,
     )
     .writable()
   const acknowledgeLastLsn = sendStandbyStatusUpdate(stream, () => state.lastProcessedLsn)
@@ -48,9 +57,8 @@ const startLogicalReplication = async <Event>(state: LogicalReplicationState, sq
       acknowledgeLastLsn()
     } else if (result.topLevelType === TopLevelType.XLogData && result.messageType === MessageType.Commit) {
       await commitTransaction(currentTransaction)
-      for (const result of currentTransaction.results) {
-        await sql`UPDATE outbox SET lsn=${currentTransaction.lsn} WHERE position=${result.position}`
-      }
+      await onCommit(currentTransaction)
+
       acknowledge()
       state.lastProcessedLsn = currentTransaction.lsn
       currentTransaction = emptyTransaction(state.lastProcessedLsn)

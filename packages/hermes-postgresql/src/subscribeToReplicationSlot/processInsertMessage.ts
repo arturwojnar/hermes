@@ -23,6 +23,22 @@ const readUInt = (buffer: Buffer, pos: Offset) => {
 
   return value
 }
+const readBigInt = (buffer: Buffer, pos: Offset) => {
+  const columnType = String.fromCharCode(buffer.readInt8(pos.value()))
+  const columnLength = buffer.readInt32BE(pos.addInt8())
+
+  assert(columnType === 't', 'readUInt.columnType')
+
+  // Read the value as a string first
+  const strValue = buffer.subarray(pos.addInt32(), pos.value() + columnLength).toString('utf-8')
+
+  // For BIGSERIAL values, use BigInt to avoid precision loss
+  const value = columnLength > 8 ? BigInt(strValue) : parseInt(strValue, 10)
+
+  pos.add(columnLength)
+
+  return value
+}
 
 const readText = (buffer: Buffer, pos: Offset) => {
   const columnType = String.fromCharCode(buffer.readInt8(pos.value()))
@@ -82,16 +98,28 @@ Int32. Length of the column value.
 ByteN. The value of the column, either in binary or in text format. (As specified in the preceding format byte). N is the above length.
 */
 const processInsertMessage = (data: Buffer): OnDataProcessingResult => {
+  console.log('Raw buffer:', data)
+  console.log('Buffer as hex:', data.toString('hex'))
+
   const messageId = String.fromCharCode(data.readInt8(0))
   // const transactionId = data.readInt32BE(Bytes.Int8)
   const relationId = data.readInt32BE(Bytes.Int8)
+  console.log('relationId:', relationId)
   const newMessageId = String.fromCharCode(data.readInt8(Bytes.Int8 + Bytes.Int32))
   const TUPLE_START_BYTE = Bytes.Int8 + Bytes.Int32 + Bytes.Int8
   const tuplesBuffer = data.subarray(TUPLE_START_BYTE)
   const columnsCount = tuplesBuffer.readInt16BE(0)
+  console.log('tuplesBuffer:', tuplesBuffer)
+  console.log('tuplesBuffer hex:', tuplesBuffer.toString('hex'))
+  console.log('columnsCount:', columnsCount)
 
   const pos = offset(Bytes.Int16)
-  const position = readUInt(tuplesBuffer, pos)
+  console.log('Initial pos:', pos.value())
+  const position = readBigInt(tuplesBuffer, pos)
+
+  console.log('position:', position)
+  console.log('pos after reading position:', pos.value())
+
   const eventType = readText(tuplesBuffer, pos)
   const payload = readJsonb(tuplesBuffer, pos)
 

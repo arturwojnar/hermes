@@ -25,6 +25,9 @@
   "scripts": {
     "prepare": "husky",
     "build": "npm run build:ts && npm run build --ws",
+    "build:core": "npm run build -w packages/hermes",
+    "build:mongodb": "npm run build -w packages/hermes-mongodb",
+    "build:postgres": "npm run build -w packages/hermes-postgresql",
     "build:ts": "npm run build:ts --ws",
     "build:clear": "rm -rf packages/*/lib packages/*/tsconfig.build.tsbuildinfo packages/*/.rollup.cache packages/*/coverage",
     "test": "npm run test --ws",

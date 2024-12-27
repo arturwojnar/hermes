@@ -56,18 +56,18 @@ type ConsumerCreationParams<Event> = {
   now?: NowFunction
 }
 
-const PublicationName = `outbox_pub`
-const SlotName = `outbox_slot`
+const PublicationName = `hermes_pub`
+const SlotName = `hermes_slot`
 
 export const migrate = async (sql: Sql) => {
   await sql`
     CREATE TABLE IF NOT EXISTS outbox (
       position    BIGSERIAL     PRIMARY KEY,
-      event_type  VARCHAR(250)  NOT NULL,
+      "eventType" VARCHAR(250)  NOT NULL,
       data        JSONB         NOT NULL,
       lsn         VARCHAR(50)   NULL,
-      addedAt     TIMESTAMPTZ   DEFAULT NOW() NOT NULL,
-      sentAt      TIMESTAMPTZ   NULL
+      "addedAt"   TIMESTAMPTZ   DEFAULT NOW() NOT NULL,
+      "sentAt"    TIMESTAMPTZ   NULL
     );
   `
 
@@ -87,24 +87,39 @@ export const migrate = async (sql: Sql) => {
     BEGIN
       IF NOT EXISTS (SELECT 1 FROM pg_catalog.pg_replication_slots WHERE slot_name = '${SlotName}')
       THEN
-          SELECT * FROM INTO slot_created pg_create_logical_replication_slot('${SlotName}', 'pgoutput');
+          PERFORM pg_create_logical_replication_slot('${SlotName}', 'pgoutput');
+          slot_created := true;
       END IF;
+
+      RAISE NOTICE 'Slot created: %', slot_created;
     END $$;
   `)
 }
+
+export type HermesSql = Sql<{
+  bigint: bigint
+}>
 
 export const createOutboxConsumer = <Event>(
   params: ConsumerCreationParams<Event>,
   // createClient: (options: Options<Record<string, PostgresType>>) => Sql,
 ): OutboxConsumer<Event> => {
-  return new OutboxConsumer(params, (options: Options<Record<string, PostgresType>>) => postgres(options))
+  return new OutboxConsumer(params, (options: Options<Record<string, PostgresType>>) =>
+    postgres({
+      ...options,
+      types: {
+        ...options?.types,
+        bigint: postgres.BigInt,
+      },
+    }),
+  )
 }
 export class OutboxConsumer<Event> implements IOutboxConsumer<Event> {
-  private _sql: Sql | null = null
+  private _sql: HermesSql | null = null
 
   constructor(
     private readonly _params: ConsumerCreationParams<Event>,
-    private readonly _createClient: (options: Options<Record<string, PostgresType>>) => Sql,
+    private readonly _createClient: (options: Options<Record<string, PostgresType>>) => HermesSql,
   ) {}
 
   getDbConnection() {
@@ -144,8 +159,12 @@ export class OutboxConsumer<Event> implements IOutboxConsumer<Event> {
 
     const restartLsnResults = await sql<
       [{ restart_lsn: Lsn }]
-    >`SELECT * FROM pg_replication_slots WHERE slot_name = 'outbox_slot';`
+    >`SELECT * FROM pg_replication_slots WHERE slot_name = 'hermes_slot';`
+    const aa = await sql.unsafe(`SELECT pg_current_wal_lsn();`)
+    console.log(aa)
     const restartLsn = restartLsnResults?.[0]?.restart_lsn || '0/00000000'
+    console.info(restartLsnResults?.[0])
+    console.info(restartLsn)
     // const { unsubscribe } = await sql.subscribe(
     //   `insert:outbox`,
     //   (row, a) => {
@@ -168,7 +187,20 @@ export class OutboxConsumer<Event> implements IOutboxConsumer<Event> {
       publication: PublicationName,
       slotName: SlotName,
     }
-    startLogicalReplication(replicationState, subscribeSql, this.publish as any).catch((error) => {
+    startLogicalReplication({
+      state: replicationState,
+      sql: subscribeSql,
+      publish: this.publish as any,
+      onCommit: async (transaction) => {
+        await sql.begin(async (sql) => {
+          console.info(`updating ${transaction.lsn}`)
+          for (const result of transaction.results) {
+            await sql`UPDATE outbox SET lsn=${transaction.lsn}, "sentAt"=NOW() WHERE position=${result.position}`
+          }
+          console.info(`updated ${transaction.lsn}`)
+        })
+      },
+    }).catch((error) => {
       console.error(error)
     })
 
@@ -210,8 +242,10 @@ const test = async () => {
 
   // while (++i) {
   //   await setTimeout(Duration.ofSeconds(5).ms)
-  const json = { name: 'AddTest', i }
-  await sql`INSERT INTO outbox (event_type, data) VALUES('AddTest-${sql(i.toString())}', ${sql.json(json)})`
+  // const json = { name: 'AddTest', i }
+  // const r =
+  //   await sql`INSERT INTO outbox (eventType, data) VALUES('AddTest-${sql(i.toString())}', ${sql.json(json)}) RETURNING *`
+  // console.log(r?.[0])
   // }
 }
 

@@ -73,6 +73,7 @@
       "name": "postgres",
       "program": "${workspaceFolder}/packages/hermes-postgresql/index.ts",
       "request": "launch",
+      "preLaunchTask": "npm: build:postgres",
       "restart": true,
       "runtimeExecutable": "${workspaceFolder}/examples/node_modules/.bin/nodemon",
       "skipFiles": ["<node_internals>/**"],
