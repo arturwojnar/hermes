@@ -15,7 +15,7 @@ jobs:
   build-and-test-code:
     name: Build application code
     # use system defined below in the tests matrix
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-20.04
 
     steps:
       - name: Check Out Repo
