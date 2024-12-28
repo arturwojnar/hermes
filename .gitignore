@@ -136,6 +136,7 @@ docs/.vitepress/cache
 docs/.vitepress/dist
 docs/hermes-mongodb
 docs/public/hermes-mongodb
+docs/public/hermes-postgresql
 # cache/
 coverage/
 .rollup.cache/

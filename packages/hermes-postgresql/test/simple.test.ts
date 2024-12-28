@@ -1,4 +1,4 @@
-// import { OutboxConsumersCollectionName, OutboxMessagesCollectionName } from '../src/consts'
+// import { OutboxConsumersCollectionName, OutboxMessagesCollectionName } from '../src/consts.js'
 import { expect, jest, test } from '@jest/globals'
 import { postgres } from './postgresql.js'
 
