@@ -10,7 +10,9 @@
     "**/bower_components": true,
     "**/dist": true,
     "package-lock.json": true,
-    "**/**/bundle.js": true
+    "**/**/bundle.js": true,
+    "**/.rollup.cache": true,
+    "**/lib": true
   },
   // "eslint.validate": ["javascript"],
   // "typescript.validate.enable": true,

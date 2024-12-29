@@ -13,9 +13,10 @@ import { Bytes, MessageType, TopLevelType } from './types.js'
  */
 const processBeginMessage = (data: Buffer): OnDataProcessingResult => {
   const pos = offset(Bytes.Int8)
-  const lsn = constructLsn(data.readInt32BE(pos.value()), data.readInt32BE(pos.addInt32()))
-  const timestamp = toTimestamp(data.readBigInt64BE(pos.addInt32()))
-  const transactionId = data.readInt32BE(pos.addInt64())
+  // const lsn2 = constructLsn(data.readUInt32BE(pos.value()), data.readUInt32BE(pos.addInt32()))
+  const lsn = constructLsn(data.subarray(1, 9))
+  const timestamp = toTimestamp(data.readBigInt64BE(pos.addInt64()))
+  const transactionId = data.readUInt32BE(pos.addInt64())
 
   return {
     topLevelType: TopLevelType.XLogData,

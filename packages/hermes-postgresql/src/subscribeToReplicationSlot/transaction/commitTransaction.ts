@@ -8,7 +8,7 @@ const commitTransaction = async (publish: Publish, transaction: Transaction) => 
       try {
         await publish({
           position: result.position,
-          eventType: result.eventType,
+          messageType: result.messageType,
           lsn: transaction.lsn,
           event: JSON.parse(result.payload),
         })

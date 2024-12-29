@@ -1,11 +1,18 @@
-import type { Lsn } from '../../common/lsn.js'
+import { type Lsn } from '../../common/lsn.js'
 
 type InsertResult = {
   position: number | bigint
-  eventType: string
+  messageId: string
+  messageType: string
+  partitionKey: string
   payload: string
 }
-type Transaction = { transactionId: number; lsn: Lsn; timestamp: Date; results: InsertResult[] }
+type Transaction = {
+  transactionId: number
+  lsn: Lsn
+  timestamp: Date
+  results: InsertResult[]
+}
 
 const emptyTransaction = (lastProcessedLsn: Lsn): Transaction => ({
   lsn: lastProcessedLsn,

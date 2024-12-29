@@ -3,6 +3,7 @@
 import { noop } from '@arturwojnar/hermes'
 import { pipe } from 'fp-ts/lib/function.js'
 import type { Error } from 'postgres'
+import { incrementWAL } from '../common/lsn.js'
 import type { Publish } from '../common/types.js'
 import { HermesSql } from '../index.js'
 import { onData } from './onData.js'
@@ -20,15 +21,16 @@ export type LogicalReplicationParams = {
 
 const startLogicalReplication = async <Event>(params: LogicalReplicationParams) => {
   const { state, sql, publish, onCommit } = params
-  let currentTransaction = emptyTransaction(state.lastProcessedLsn)
-  const location = typeof state.lastProcessedLsn === 'undefined' ? '0/00000000' : state.lastProcessedLsn.toString()
+  const location = typeof state.lastProcessedLsn === 'undefined' ? '0/00000000' : state.lastProcessedLsn
+  let currentTransaction = emptyTransaction(location)
   const stream = await sql
     .unsafe(
-      `START_REPLICATION SLOT hermes_slot LOGICAL ${location} (proto_version '1', publication_names 'hermes_pub')`,
+      `START_REPLICATION SLOT hermes_slot LOGICAL ${incrementWAL(location)} (proto_version '1', publication_names '${params.state.publication}')`,
     )
     .writable()
   const acknowledgeLastLsn = sendStandbyStatusUpdate(stream, () => state.lastProcessedLsn)
   const acknowledge = sendStandbyStatusUpdate(stream, () => currentTransaction.lsn)
+  // acknowledgeLastLsn()
   const commitTransaction = _commitTransaction.bind(undefined, publish)
   const close = async () => {
     if (stream) {
@@ -36,7 +38,7 @@ const startLogicalReplication = async <Event>(params: LogicalReplicationParams) 
     }
     return sql.end()
   }
-  // position 50
+
   const storeResult = (result: OnDataProcessingResult) => {
     if (result.messageType === MessageType.Begin) {
       currentTransaction = createTransaction(result.transactionId, result.lsn, result.timestamp)
@@ -46,7 +48,8 @@ const startLogicalReplication = async <Event>(params: LogicalReplicationParams) 
       // currentTransaction.results = [...currentTransaction.results, result.result]
       addInsert(currentTransaction, result.result)
     } else if (result.messageType === MessageType.Commit) {
-      console.log(result)
+      // currentTransaction.lsn = result.transactionEndLsn
+      console.log('storeResult - Commit')
     }
 
     return result

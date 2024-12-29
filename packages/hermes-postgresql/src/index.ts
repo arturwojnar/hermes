@@ -25,6 +25,10 @@ type ConsumerCreationParams<Event> = {
   // db: Db
   publish: (event: Event) => AsyncOrSync<void> | never
   /**
+   * Consumer name.
+   */
+  consumerName: string
+  /**
    * @defaultValue `default`
    */
   partitionKey?: string
@@ -61,15 +65,32 @@ const SlotName = `hermes_slot`
 
 export const migrate = async (sql: Sql) => {
   await sql`
-    CREATE TABLE IF NOT EXISTS outbox (
-      position    BIGSERIAL     PRIMARY KEY,
-      "eventType" VARCHAR(250)  NOT NULL,
-      data        JSONB         NOT NULL,
-      lsn         VARCHAR(50)   NULL,
-      "addedAt"   TIMESTAMPTZ   DEFAULT NOW() NOT NULL,
-      "sentAt"    TIMESTAMPTZ   NULL
+    CREATE TABLE IF NOT EXISTS "outbox" (
+      "position"      BIGSERIAL     PRIMARY KEY,
+      "messageId"     VARCHAR(250)  NOT NULL,
+      "messageType"     VARCHAR(250)  NOT NULL,
+      "partitionKey"  VARCHAR(50)   DEFAULT 'default' NOT NULL,
+      "data"          JSONB         NOT NULL,
+      "addedAt"       TIMESTAMPTZ   DEFAULT NOW() NOT NULL,
+      "createdAt"     TIMESTAMPTZ   DEFAULT NOW() NOT NULL,
+      "lsn"           VARCHAR(50)   NULL,
+      "sentAt"        TIMESTAMPTZ   NULL
     );
   `
+
+  await sql`
+    CREATE TABLE IF NOT EXISTS "outboxConsumer" (
+      "id"                BIGSERIAL     PRIMARY KEY,
+      "consumerName"      VARCHAR(30)   NOT NULL,
+      "partitionKey"      VARCHAR(50)   DEFAULT 'default' NOT NULL,
+      "lastProcessedLsn"  VARCHAR(20)   DEFAULT '0/00000000' NOT NULL,
+      "createdAt"         TIMESTAMPTZ   DEFAULT NOW() NOT NULL,
+      "lastUpdatedAt"     TIMESTAMPTZ   DEFAULT NOW() NULL
+    );
+  `
+
+  await sql`CREATE UNIQUE INDEX IF NOT EXISTS "consumerNameIdx" ON "outboxConsumer" ("consumerName" DESC);`
+  await sql`CREATE INDEX IF NOT EXISTS "consumerNameAndPartKeyIdx" ON "outboxConsumer" ("consumerName" DESC, "partitionKey" NULLS LAST);`
 
   await sql.unsafe(`
     DO $$
@@ -128,7 +149,8 @@ export class OutboxConsumer<Event> implements IOutboxConsumer<Event> {
   }
 
   async start(): Promise<Stop> {
-    const { publish, getOptions } = this._params
+    const { publish, getOptions, consumerName } = this._params
+    const partitionKey = this._params.partitionKey || 'default'
 
     const sql = (this._sql = this._createClient({
       ...getOptions(),
@@ -160,11 +182,20 @@ export class OutboxConsumer<Event> implements IOutboxConsumer<Event> {
     const restartLsnResults = await sql<
       [{ restart_lsn: Lsn }]
     >`SELECT * FROM pg_replication_slots WHERE slot_name = 'hermes_slot';`
-    const aa = await sql.unsafe(`SELECT pg_current_wal_lsn();`)
-    console.log(aa)
     const restartLsn = restartLsnResults?.[0]?.restart_lsn || '0/00000000'
+
+    await sql`
+      INSERT INTO "outboxConsumer" ("consumerName", "partitionKey", "lastProcessedLsn") VALUES (${consumerName}, ${partitionKey}, ${restartLsn})
+      ON CONFLICT ("consumerName") DO NOTHING;
+    `
+    const [{ lastProcessedLsn }] = await sql`
+        SELECT "lastProcessedLsn" FROM "outboxConsumer"
+        WHERE "consumerName"=${consumerName} AND "partitionKey"=${partitionKey}
+      `
+    console.log(lastProcessedLsn)
     console.info(restartLsnResults?.[0])
     console.info(restartLsn)
+    console.info(lastProcessedLsn)
     // const { unsubscribe } = await sql.subscribe(
     //   `insert:outbox`,
     //   (row, a) => {
@@ -182,7 +213,7 @@ export class OutboxConsumer<Event> implements IOutboxConsumer<Event> {
     //   },
     // )
     const replicationState: LogicalReplicationState = {
-      lastProcessedLsn: restartLsn,
+      lastProcessedLsn: lastProcessedLsn,
       timestamp: new Date(),
       publication: PublicationName,
       slotName: SlotName,
@@ -194,9 +225,10 @@ export class OutboxConsumer<Event> implements IOutboxConsumer<Event> {
       onCommit: async (transaction) => {
         await sql.begin(async (sql) => {
           console.info(`updating ${transaction.lsn}`)
-          for (const result of transaction.results) {
-            await sql`UPDATE outbox SET lsn=${transaction.lsn}, "sentAt"=NOW() WHERE position=${result.position}`
-          }
+          await sql`UPDATE "outboxConsumer" SET "lastProcessedLsn"=${transaction.lsn}, "lastUpdatedAt"=NOW() WHERE "consumerName"=${consumerName}`
+          // for (const result of transaction.results) {
+          //   await sql`UPDATE outbox SET lsn=${transaction.lsn}, "sentAt"=NOW() WHERE position=${result.position}`
+          // }
           console.info(`updated ${transaction.lsn}`)
         })
       },
@@ -229,6 +261,7 @@ const test = async () => {
     publish: (event) => {
       return Promise.resolve()
     },
+    consumerName: 'app',
   })
 
   const stop = await hermes.start()
@@ -244,7 +277,7 @@ const test = async () => {
   //   await setTimeout(Duration.ofSeconds(5).ms)
   // const json = { name: 'AddTest', i }
   // const r =
-  //   await sql`INSERT INTO outbox (eventType, data) VALUES('AddTest-${sql(i.toString())}', ${sql.json(json)}) RETURNING *`
+  //   await sql`INSERT INTO outbox (messageType, data) VALUES('AddTest-${sql(i.toString())}', ${sql.json(json)}) RETURNING *`
   // console.log(r?.[0])
   // }
 }

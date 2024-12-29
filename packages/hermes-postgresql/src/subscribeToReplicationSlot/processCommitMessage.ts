@@ -11,10 +11,9 @@ import { Bytes, MessageType, TopLevelType } from './types.js'
  * Int64 (TimestampTz). Commit timestamp of the transaction. The value is in number of microseconds since PostgreSQL epoch (2000-01-01).
  */
 const processCommitMessage = (data: Buffer): OnDataProcessingResult => {
-  const pos = offset(Bytes.Int8 + Bytes.Int8 + Bytes.Int64 + Bytes.Int64)
-  // const lsn = `${data.readInt32BE(pos.value())}/${data.readInt32BE(pos.addInt32())}`
-  // Skip end LSN and timestamp as we don't need them for this use case
-  // const endLsn = data.readBigInt64BE(pos.addInt32())
+  const pos = offset(Bytes.Int8 + Bytes.Int8 + Bytes.Int64)
+  // const commitLsn = constructLsn(data.readUInt32BE(pos.value()), data.readUInt32BE(pos.addInt32()))
+  // const transactionEndLsn = constructLsn(data.subarray(pos.value(), pos.))
   const commitTimestamp = toTimestamp(data.readBigInt64BE(pos.value()))
 
   // The transaction ID should be available from the context of the current transaction

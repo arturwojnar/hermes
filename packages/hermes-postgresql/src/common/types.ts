@@ -2,7 +2,7 @@ import type { AsyncOrSync } from 'ts-essentials'
 
 type EventEnvelope<Event> = {
   position: number | bigint
-  eventType: string
+  messageType: string
   lsn: string
   event: Event
 }

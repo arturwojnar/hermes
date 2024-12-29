@@ -12,7 +12,7 @@ const readIntFn = {
 }
 const readUInt = (buffer: Buffer, pos: Offset) => {
   const columnType = String.fromCharCode(buffer.readInt8(pos.value()))
-  const columnLength = buffer.readInt32BE(pos.addInt8()).toString() as '1' | '2' | '4' | '8'
+  const columnLength = buffer.readUInt32BE(pos.addInt8()).toString() as '1' | '2' | '4' | '8'
 
   assert(columnType === 't', 'readUInt.columnType')
   assert(['1', '2', '4', '8'].includes(columnLength), 'readUInt.columnLength')
@@ -25,7 +25,7 @@ const readUInt = (buffer: Buffer, pos: Offset) => {
 }
 const readBigInt = (buffer: Buffer, pos: Offset) => {
   const columnType = String.fromCharCode(buffer.readInt8(pos.value()))
-  const columnLength = buffer.readInt32BE(pos.addInt8())
+  const columnLength = buffer.readUInt32BE(pos.addInt8())
 
   assert(columnType === 't', 'readUInt.columnType')
 
@@ -42,7 +42,7 @@ const readBigInt = (buffer: Buffer, pos: Offset) => {
 
 const readText = (buffer: Buffer, pos: Offset) => {
   const columnType = String.fromCharCode(buffer.readInt8(pos.value()))
-  const columnLength = buffer.readInt32BE(pos.addInt8())
+  const columnLength = buffer.readUInt32BE(pos.addInt8())
 
   assert(columnType === 't', 'readText.columnType')
 
@@ -53,7 +53,7 @@ const readText = (buffer: Buffer, pos: Offset) => {
 
 const readJsonb = (buffer: Buffer, pos: Offset) => {
   const columnType = String.fromCharCode(buffer.readInt8(pos.value()))
-  const columnLength = buffer.readInt32BE(pos.addInt8())
+  const columnLength = buffer.readUInt32BE(pos.addInt8())
 
   assert(columnType === 't', 'readText.readJsonb')
 
@@ -101,31 +101,24 @@ const processInsertMessage = (data: Buffer): OnDataProcessingResult => {
   console.log('Raw buffer:', data)
   console.log('Buffer as hex:', data.toString('hex'))
 
-  const messageId = String.fromCharCode(data.readInt8(0))
-  // const transactionId = data.readInt32BE(Bytes.Int8)
-  const relationId = data.readInt32BE(Bytes.Int8)
-  console.log('relationId:', relationId)
+  // const messageId = String.fromCharCode(data.readInt8(0))
+  // const transactionId = data.readUInt32BE(Bytes.Int8)
+  const relationId = data.readUInt32BE(Bytes.Int8)
+
   const newMessageId = String.fromCharCode(data.readInt8(Bytes.Int8 + Bytes.Int32))
   const TUPLE_START_BYTE = Bytes.Int8 + Bytes.Int32 + Bytes.Int8
   const tuplesBuffer = data.subarray(TUPLE_START_BYTE)
   const columnsCount = tuplesBuffer.readInt16BE(0)
-  console.log('tuplesBuffer:', tuplesBuffer)
-  console.log('tuplesBuffer hex:', tuplesBuffer.toString('hex'))
-  console.log('columnsCount:', columnsCount)
 
   const pos = offset(Bytes.Int16)
-  console.log('Initial pos:', pos.value())
   const position = readBigInt(tuplesBuffer, pos)
 
-  console.log('position:', position)
-  console.log('pos after reading position:', pos.value())
-
-  const eventType = readText(tuplesBuffer, pos)
+  const messageId = readText(tuplesBuffer, pos)
+  const messageType = readText(tuplesBuffer, pos)
+  const partitionKey = readText(tuplesBuffer, pos)
   const payload = readJsonb(tuplesBuffer, pos)
 
-  console.log(position)
-  console.log(eventType)
-  console.log(payload)
+  console.log(position, messageId, messageType, partitionKey, payload)
   // const columnsDescriptions = tuplesBuffer.readUInt32BE(Bytes.Int8 * 3)
 
   // assert(columnsCount === 3)
@@ -139,7 +132,9 @@ const processInsertMessage = (data: Buffer): OnDataProcessingResult => {
     transactionId: 0,
     result: {
       position,
-      eventType,
+      messageId,
+      partitionKey,
+      messageType,
       payload,
     },
   }
