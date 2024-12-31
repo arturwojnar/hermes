@@ -1,7 +1,6 @@
 type Lsn = `${string}/${string}`
 
-const FOUR_BYTES_FULL = 0xffffffff
-const LSN_REGEXP = new RegExp(`[0-9a-f]+/[0-9a-f]+`, 'i')
+const LSN_REGEXP = new RegExp(`^[0-9a-f]+/[0-9a-f]+$`, 'i')
 
 const getUpperAndLowerWAL = (lsn: Lsn) => {
   return lsn.split('/').map((x) => parseInt(x, 16))
@@ -25,7 +24,6 @@ const convertBigIntToLsn = (lsn: bigint) => {
   return `${upperWal.toString(16).toUpperCase()}/${lowerWal.toString(16).toUpperCase()}`
 }
 const incrementWAL = (lsn: Lsn) => {
-  console.log(`Before ${lsn}, Incremented ${convertBigIntToLsn(convertLsnToBigInt(lsn) + BigInt(1))}`)
   return convertLsnToBigInt(lsn) + BigInt(1)
 }
 const constructLsn = (lsn: Buffer): Lsn => {
