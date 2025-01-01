@@ -6,7 +6,7 @@ import type { Options, PostgresType, Sql } from 'postgres'
 import postgres from 'postgres'
 import type { AsyncOrSync } from 'ts-essentials'
 import type { Lsn } from './common/lsn.js'
-import type { EventEnvelope } from './common/types.js'
+import type { EventEnvelope, InsertResult } from './common/types.js'
 import type { LogicalReplicationState } from './subscribeToReplicationSlot/logicalReplicationStream.js'
 import { startLogicalReplication } from './subscribeToReplicationSlot/logicalReplicationStream.js'
 
@@ -23,7 +23,7 @@ type ErrorCallback = (error: unknown) => void
 type ConsumerCreationParams<Event> = {
   getOptions: () => Options<Record<string, PostgresType>>
   // db: Db
-  publish: (event: Event) => AsyncOrSync<void> | never
+  publish: (event: EventEnvelope<Event> | EventEnvelope<Event>[]) => AsyncOrSync<void> | never
   /**
    * Consumer name.
    */
@@ -218,18 +218,28 @@ export class OutboxConsumer<Event> implements IOutboxConsumer<Event> {
       publication: PublicationName,
       slotName: SlotName,
     }
-    startLogicalReplication({
+    startLogicalReplication<InsertResult>({
       state: replicationState,
       sql: subscribeSql,
-      publish: this.publish as any,
-      onCommit: async (transaction) => {
+      columnConfig: {
+        position: 'bigint',
+        messageId: 'text',
+        messageType: 'text',
+        partitionKey: 'text',
+        payload: 'jsonb',
+      },
+      onInserted: async (transaction) => {
         await sql.begin(async (sql) => {
-          console.info(`updating ${transaction.lsn}`)
+          const messages = transaction.results.map<EventEnvelope<Event>>((result) => ({
+            position: result.position,
+            messageId: result.messageId,
+            messageType: result.messageType,
+            lsn: transaction.lsn,
+            event: JSON.parse(result.payload) as Event,
+          }))
+
+          await publish(messages)
           await sql`UPDATE "outboxConsumer" SET "lastProcessedLsn"=${transaction.lsn}, "lastUpdatedAt"=NOW() WHERE "consumerName"=${consumerName}`
-          // for (const result of transaction.results) {
-          //   await sql`UPDATE outbox SET lsn=${transaction.lsn}, "sentAt"=NOW() WHERE position=${result.position}`
-          // }
-          console.info(`updated ${transaction.lsn}`)
         })
       },
     }).catch((error) => {

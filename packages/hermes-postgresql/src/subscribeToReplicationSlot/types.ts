@@ -1,5 +1,4 @@
 import type { Lsn } from '../common/lsn.js'
-import { type InsertResult } from './transaction/transaction.js'
 
 enum MessageType {
   Begin = 'B',
@@ -26,7 +25,12 @@ type LogicalReplicationState = {
   slotName: string
 }
 
-type OnDataProcessingResult =
+type ColumnType = 'bigint' | 'text' | 'jsonb' | 'uint'
+type ColumnConfig<Keys extends string | number | symbol = string | number | symbol> = {
+  [key in Keys]: ColumnType
+}
+
+type OnDataProcessingResult<InsertResult> =
   | {
       topLevelType: TopLevelType.PrimaryKeepaliveMessage
       messageType: MessageType.Other
@@ -56,6 +60,16 @@ type OnDataProcessingResult =
       symbol: string
     }
 
+type Transaction<InsertResult = unknown> = {
+  transactionId: number
+  lsn: Lsn
+  timestamp: Date
+  results: InsertResult[]
+}
+
+type OnCommit<InsertResult = unknown> = (transaction: Transaction<InsertResult>) => Promise<void>
+type OnInserted<InsertResult = unknown> = (transaction: Transaction<InsertResult>) => Promise<void>
+
 const TopLevelTypeValues = Object.values(TopLevelType)
 const MessageTypeValues = Object.values(MessageType)
 const isTopLevelType = (char: string): char is TopLevelType => TopLevelTypeValues.includes(char as TopLevelType)
@@ -82,4 +96,9 @@ export {
   parseMessageType,
   parseTopLevelType,
   TopLevelType,
+  type ColumnConfig,
+  type ColumnType,
+  type OnCommit,
+  type OnInserted,
+  type Transaction,
 }

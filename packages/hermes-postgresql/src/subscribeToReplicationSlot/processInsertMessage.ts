@@ -1,7 +1,7 @@
 import assert from 'assert'
 import type { Offset } from '../common/offset.js'
 import { offset } from '../common/offset.js'
-import type { OnDataProcessingResult } from './types.js'
+import type { ColumnConfig, ColumnType, OnDataProcessingResult } from './types.js'
 import { Bytes, MessageType, TopLevelType } from './types.js'
 
 const readIntFn = {
@@ -62,6 +62,13 @@ const readJsonb = (buffer: Buffer, pos: Offset) => {
   return value.toString('utf-8')
 }
 
+const columnReaders = {
+  uint: readUInt,
+  bigint: readBigInt,
+  text: readText,
+  jsonb: readJsonb,
+}
+
 // https://www.postgresql.org/docs/current/protocol-logicalrep-message-fordatamats.html#PROTOCOL-LOGICALREP-MESSAGE-FORMATS-INSERT
 // https://www.postgresql.org/docs/current/protocol-logicalrep-message-formats.html#PROTOCOL-LOGICALREP-MESSAGE-FORMATS-TUPLEDATA
 /*
@@ -97,47 +104,52 @@ Int32. Length of the column value.
 
 ByteN. The value of the column, either in binary or in text format. (As specified in the preceding format byte). N is the above length.
 */
-const processInsertMessage = (data: Buffer): OnDataProcessingResult => {
-  console.log('Raw buffer:', data)
-  console.log('Buffer as hex:', data.toString('hex'))
+// extends Record<string, unknown>
+const processInsertMessage = <InsertResult>(columnConfig: ColumnConfig<keyof InsertResult>) => {
+  const entries = Object.entries(columnConfig) as [keyof InsertResult, InsertResult[keyof InsertResult]][]
+  const readers = entries.map(([columnName, columnType]) => ({
+    columnName,
+    reader: columnReaders[columnType as ColumnType],
+  }))
 
-  // const messageId = String.fromCharCode(data.readInt8(0))
-  // const transactionId = data.readUInt32BE(Bytes.Int8)
-  const relationId = data.readUInt32BE(Bytes.Int8)
+  // verification of the columns and readers.
+  readers.forEach(({ reader }) => assert(reader, `Unknown column type`))
 
-  const newMessageId = String.fromCharCode(data.readInt8(Bytes.Int8 + Bytes.Int32))
-  const TUPLE_START_BYTE = Bytes.Int8 + Bytes.Int32 + Bytes.Int8
-  const tuplesBuffer = data.subarray(TUPLE_START_BYTE)
-  const columnsCount = tuplesBuffer.readInt16BE(0)
+  const readTuple = (pos: Offset, tuplesBuffer: Buffer) => {
+    return readers.reduce<InsertResult>((result, { columnName, reader }) => {
+      Object.defineProperty(result, columnName, {
+        value: reader(tuplesBuffer, pos),
+        writable: false,
+        enumerable: true,
+      })
 
-  const pos = offset(Bytes.Int16)
-  const position = readBigInt(tuplesBuffer, pos)
-
-  const messageId = readText(tuplesBuffer, pos)
-  const messageType = readText(tuplesBuffer, pos)
-  const partitionKey = readText(tuplesBuffer, pos)
-  const payload = readJsonb(tuplesBuffer, pos)
-
-  console.log(position, messageId, messageType, partitionKey, payload)
-  // const columnsDescriptions = tuplesBuffer.readUInt32BE(Bytes.Int8 * 3)
-
-  // assert(columnsCount === 3)
-  const columns = {
-    position: 1,
+      return result
+    }, {} as InsertResult)
   }
 
-  return {
-    topLevelType: TopLevelType.XLogData,
-    messageType: MessageType.Insert,
-    transactionId: 0,
-    result: {
-      position,
-      messageId,
-      partitionKey,
-      messageType,
-      payload,
-    },
+  return (data: Buffer): OnDataProcessingResult<InsertResult> => {
+    const relationId = data.readUInt32BE(Bytes.Int8)
+    const newMessageId = String.fromCharCode(data.readInt8(Bytes.Int8 + Bytes.Int32))
+
+    const TUPLE_START_BYTE = Bytes.Int8 + Bytes.Int32 + Bytes.Int8
+    const tuplesBuffer = data.subarray(TUPLE_START_BYTE)
+    const columnsCount = tuplesBuffer.readInt16BE(0)
+
+    assert(
+      columnsCount === Object.keys(columnConfig).length,
+      `Expected ${Object.keys(columnConfig).length} columns but got ${columnsCount}`,
+    )
+
+    const pos = offset(Bytes.Int16)
+    const result = readTuple(pos, tuplesBuffer)
+
+    return {
+      topLevelType: TopLevelType.XLogData,
+      messageType: MessageType.Insert,
+      transactionId: 0,
+      result,
+    }
   }
 }
 
-export { processInsertMessage }
+export { processInsertMessage, readBigInt, readJsonb, readText, readUInt }

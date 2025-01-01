@@ -1,7 +1,7 @@
 import type { OnDataProcessingResult } from './types.js'
 import { Bytes, MessageType, TopLevelType } from './types.js'
 
-const keepAliveResult = (shouldPong: boolean): OnDataProcessingResult => ({
+const keepAliveResult = <InsertResult>(shouldPong: boolean): OnDataProcessingResult<InsertResult> => ({
   topLevelType: TopLevelType.PrimaryKeepaliveMessage,
   messageType: MessageType.Other,
   shouldPong,
@@ -13,12 +13,12 @@ const keepAliveResult = (shouldPong: boolean): OnDataProcessingResult => ({
  * Int64. The server's system clock at the time of transmission, as microseconds since midnight on 2000-01-01.
  * Byte1. 1 means that the client should reply to this message as soon as possible, to avoid a timeout disconnect. 0 otherwise.
  */
-const processPrimaryKeepAliveMessage = (data: Buffer) => {
+const processPrimaryKeepAliveMessage = <InsertResult>(data: Buffer): OnDataProcessingResult<InsertResult> => {
   if (!data[Bytes.Int8 + Bytes.Int64 + Bytes.Int64]) {
     return keepAliveResult(false)
   }
 
-  return keepAliveResult(true)
+  return keepAliveResult<InsertResult>(true)
 }
 
 export { processPrimaryKeepAliveMessage }

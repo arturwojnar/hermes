@@ -4,34 +4,39 @@ import { noop } from '@arturwojnar/hermes'
 import { pipe } from 'fp-ts/lib/function.js'
 import type { Error } from 'postgres'
 import { incrementWAL } from '../common/lsn.js'
-import type { Publish } from '../common/types.js'
 import { HermesSql } from '../index.js'
-import { onData } from './onData.js'
+import { onData as _onData } from './onData.js'
 import { sendStandbyStatusUpdate } from './sendStandbyStatusUpdate.js'
-import { commitTransaction as _commitTransaction } from './transaction/commitTransaction.js'
-import { addInsert, createTransaction, emptyTransaction, Transaction } from './transaction/transaction.js'
-import { MessageType, TopLevelType, type LogicalReplicationState, type OnDataProcessingResult } from './types.js'
+import { addInsert, createTransaction, emptyTransaction } from './transaction/transaction.js'
+import {
+  ColumnConfig,
+  MessageType,
+  OnInserted,
+  TopLevelType,
+  type LogicalReplicationState,
+  type OnDataProcessingResult,
+} from './types.js'
 
-export type LogicalReplicationParams = {
+export type LogicalReplicationParams<InsertResult> = {
   state: LogicalReplicationState
   sql: HermesSql
-  publish: Publish
-  onCommit: (transaction: Transaction) => Promise<void>
+  columnConfig: ColumnConfig<keyof InsertResult>
+  onInserted: OnInserted<InsertResult>
 }
 
-const startLogicalReplication = async <Event>(params: LogicalReplicationParams) => {
-  const { state, sql, publish, onCommit } = params
+const startLogicalReplication = async <InsertResult>(params: LogicalReplicationParams<InsertResult>) => {
+  const { state, sql } = params
+  const onInserted = params.onInserted || noop
   const location = typeof state.lastProcessedLsn === 'undefined' ? '0/00000000' : state.lastProcessedLsn
-  let currentTransaction = emptyTransaction(location)
+  let currentTransaction = emptyTransaction<InsertResult>(location)
   const stream = await sql
     .unsafe(
       `START_REPLICATION SLOT hermes_slot LOGICAL ${incrementWAL(location)} (proto_version '1', publication_names '${params.state.publication}')`,
     )
     .writable()
+  const onData = (message: Buffer) => _onData(params.columnConfig, message)
   const acknowledgeLastLsn = sendStandbyStatusUpdate(stream, () => state.lastProcessedLsn)
-  const acknowledge = sendStandbyStatusUpdate(stream, () => currentTransaction.lsn)
-  // acknowledgeLastLsn()
-  const commitTransaction = _commitTransaction.bind(undefined, publish)
+  const commitTransaction = sendStandbyStatusUpdate(stream, () => currentTransaction.lsn)
   const close = async () => {
     if (stream) {
       await new Promise((r) => (stream.once('close', r), stream.end()))
@@ -39,9 +44,9 @@ const startLogicalReplication = async <Event>(params: LogicalReplicationParams) 
     return sql.end()
   }
 
-  const storeResult = (result: OnDataProcessingResult) => {
+  const storeResult = (result: OnDataProcessingResult<InsertResult>) => {
     if (result.messageType === MessageType.Begin) {
-      currentTransaction = createTransaction(result.transactionId, result.lsn, result.timestamp)
+      currentTransaction = createTransaction<InsertResult>(result.transactionId, result.lsn, result.timestamp)
       console.log(result)
     } else if (result.messageType === MessageType.Insert) {
       console.log(result)
@@ -55,14 +60,14 @@ const startLogicalReplication = async <Event>(params: LogicalReplicationParams) 
     return result
   }
 
-  const handleResult = async (result: OnDataProcessingResult) => {
+  const handleResult = async (result: OnDataProcessingResult<InsertResult>) => {
     if (result.topLevelType === TopLevelType.PrimaryKeepaliveMessage && result.shouldPong) {
       acknowledgeLastLsn()
     } else if (result.topLevelType === TopLevelType.XLogData && result.messageType === MessageType.Commit) {
-      await commitTransaction(currentTransaction)
-      await onCommit(currentTransaction)
+      await onInserted(currentTransaction)
 
-      acknowledge()
+      commitTransaction()
+
       state.lastProcessedLsn = currentTransaction.lsn
       currentTransaction = emptyTransaction(state.lastProcessedLsn)
     }

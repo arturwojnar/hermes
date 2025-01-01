@@ -10,7 +10,7 @@ import { Bytes, MessageType, TopLevelType } from './types.js'
  * Int64 (XLogRecPtr). The end LSN of the transaction.
  * Int64 (TimestampTz). Commit timestamp of the transaction. The value is in number of microseconds since PostgreSQL epoch (2000-01-01).
  */
-const processCommitMessage = (data: Buffer): OnDataProcessingResult => {
+const processCommitMessage = <InsertResult>(data: Buffer): OnDataProcessingResult<InsertResult> => {
   const pos = offset(Bytes.Int8 + Bytes.Int8 + Bytes.Int64)
   // const commitLsn = constructLsn(data.readUInt32BE(pos.value()), data.readUInt32BE(pos.addInt32()))
   // const transactionEndLsn = constructLsn(data.subarray(pos.value(), pos.))

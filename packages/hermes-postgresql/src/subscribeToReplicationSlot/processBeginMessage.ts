@@ -11,7 +11,7 @@ import { Bytes, MessageType, TopLevelType } from './types.js'
  * Int64 (TimestampTz). Commit timestamp of the transaction. The value is in number of microseconds since PostgreSQL epoch (2000-01-01).
  * Int32 (TransactionId). Xid of the transaction.
  */
-const processBeginMessage = (data: Buffer): OnDataProcessingResult => {
+const processBeginMessage = <InsertResult>(data: Buffer): OnDataProcessingResult<InsertResult> => {
   const pos = offset(Bytes.Int8)
   // const lsn2 = constructLsn(data.readUInt32BE(pos.value()), data.readUInt32BE(pos.addInt32()))
   const lsn = constructLsn(data.subarray(1, 9))
