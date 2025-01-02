@@ -1,6 +1,6 @@
 /* -eslint-disable  @typescript-eslint/no-unused-vars  */
 
-import { noop } from '@arturwojnar/hermes'
+import { CancellationPromise, noop } from '@arturwojnar/hermes'
 import { pipe } from 'fp-ts/lib/function.js'
 import type { Error } from 'postgres'
 import { convertBigIntToLsn, incrementWAL } from '../common/lsn.js'
@@ -34,6 +34,7 @@ const startLogicalReplication = async <InsertResult>(params: LogicalReplicationP
       `START_REPLICATION SLOT hermes_slot LOGICAL ${convertBigIntToLsn(incrementWAL(location))} (proto_version '1', publication_names '${params.state.publication}')`,
     )
     .writable()
+  let processingPromise = CancellationPromise.resolved(0)
   const curriedOnData = _onData(params.columnConfig)
   const onData = (message: Buffer) => curriedOnData(message)
   const acknowledgeLastLsn = sendStandbyStatusUpdate(stream, () => state.lastProcessedLsn)
@@ -75,11 +76,21 @@ const startLogicalReplication = async <InsertResult>(params: LogicalReplicationP
   }
 
   stream.on('data', async (message: Buffer) => {
-    await pipe(message, onData, storeResult, handleResult)
-    // await handleResult(storeResult(onData(message)))
+    await processingPromise
+    processingPromise = new CancellationPromise()
+
+    try {
+      await pipe(message, onData, storeResult, handleResult)
+    } finally {
+      processingPromise.resolve(0)
+    }
   })
-  stream.on('error', onError)
+  stream.on('error', (error: Error) => {
+    processingPromise.resolve(0)
+    console.error(error)
+  })
   stream.on('close', () => {
+    processingPromise.resolve(0)
     close().catch(noop)
   })
 }
