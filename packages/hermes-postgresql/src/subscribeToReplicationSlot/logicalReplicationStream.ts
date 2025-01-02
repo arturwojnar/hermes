@@ -3,7 +3,7 @@
 import { noop } from '@arturwojnar/hermes'
 import { pipe } from 'fp-ts/lib/function.js'
 import type { Error } from 'postgres'
-import { incrementWAL } from '../common/lsn.js'
+import { convertBigIntToLsn, incrementWAL } from '../common/lsn.js'
 import { HermesSql } from '../index.js'
 import { onData as _onData } from './onData.js'
 import { sendStandbyStatusUpdate } from './sendStandbyStatusUpdate.js'
@@ -31,10 +31,11 @@ const startLogicalReplication = async <InsertResult>(params: LogicalReplicationP
   let currentTransaction = emptyTransaction<InsertResult>(location)
   const stream = await sql
     .unsafe(
-      `START_REPLICATION SLOT hermes_slot LOGICAL ${incrementWAL(location)} (proto_version '1', publication_names '${params.state.publication}')`,
+      `START_REPLICATION SLOT hermes_slot LOGICAL ${convertBigIntToLsn(incrementWAL(location))} (proto_version '1', publication_names '${params.state.publication}')`,
     )
     .writable()
-  const onData = (message: Buffer) => _onData(params.columnConfig, message)
+  const curriedOnData = _onData(params.columnConfig)
+  const onData = (message: Buffer) => curriedOnData(message)
   const acknowledgeLastLsn = sendStandbyStatusUpdate(stream, () => state.lastProcessedLsn)
   const commitTransaction = sendStandbyStatusUpdate(stream, () => currentTransaction.lsn)
   const close = async () => {

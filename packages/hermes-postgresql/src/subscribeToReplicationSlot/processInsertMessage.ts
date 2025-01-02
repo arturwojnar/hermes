@@ -134,12 +134,6 @@ const processInsertMessage = <InsertResult>(columnConfig: ColumnConfig<keyof Ins
     const TUPLE_START_BYTE = Bytes.Int8 + Bytes.Int32 + Bytes.Int8
     const tuplesBuffer = data.subarray(TUPLE_START_BYTE)
     const columnsCount = tuplesBuffer.readInt16BE(0)
-
-    assert(
-      columnsCount === Object.keys(columnConfig).length,
-      `Expected ${Object.keys(columnConfig).length} columns but got ${columnsCount}`,
-    )
-
     const pos = offset(Bytes.Int16)
     const result = readTuple(pos, tuplesBuffer)
 
