@@ -1,4 +1,4 @@
-import type { AsyncOrSync } from 'ts-essentials'
+import { Sql } from 'postgres'
 
 type EventEnvelope<Event> = {
   position: number | bigint
@@ -8,8 +8,6 @@ type EventEnvelope<Event> = {
   event: Event
 }
 
-type Publish = (event: EventEnvelope<Event> | EventEnvelope<Event>[]) => AsyncOrSync<void> | never
-
 type InsertResult = {
   position: number | bigint
   messageId: string
@@ -18,4 +16,28 @@ type InsertResult = {
   payload: string
 }
 
-export type { EventEnvelope, InsertResult, Publish }
+type Start = () => Promise<Stop>
+type Stop = () => Promise<void>
+type Publish<Event> = (event: EventEnvelope<Event> | EventEnvelope<Event>[]) => Promise<void>
+type IOutboxConsumer<Event> = {
+  start: Start
+  publish: Publish<Event>
+  getDbConnection(): Sql
+}
+type NowFunction = () => Date
+type ErrorCallback = (error: unknown) => void
+type HermesSql = Sql<{
+  bigint: bigint
+}>
+
+export type {
+  ErrorCallback,
+  EventEnvelope,
+  HermesSql,
+  InsertResult,
+  IOutboxConsumer,
+  NowFunction,
+  Publish,
+  Start,
+  Stop,
+}

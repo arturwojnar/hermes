@@ -1,7 +1,6 @@
-import type { Publish } from '../../common/types.js'
 import type { Transaction } from './transaction.js'
 
-const commitTransaction = async <InsertResult>(publish: Publish, transaction: Transaction<InsertResult>) => {
+const commitTransaction = async <InsertResult>(transaction: Transaction<InsertResult>) => {
   try {
     // Process all inserts in the transaction
     for (const result of transaction.results) {

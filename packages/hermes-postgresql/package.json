@@ -65,13 +65,13 @@
   },
   "devDependencies": {
     "@jest/globals": "~29.7.0",
-    "@testcontainers/postgresql": "~10.15.0",
-    "testcontainers": "~10.15.0",
-    "ts-essentials": "~10.0.3"
+    "@testcontainers/postgresql": "~10.16.0",
+    "testcontainers": "~10.16.0",
+    "ts-essentials": "~10.0.4"
   },
   "dependencies": {
     "fp-ts": "~2.16.9",
-    "nodemon": "~3.1.7",
+    "nodemon": "~3.1.9",
     "postgres": "~3.4.5"
   },
   "peerDependencies": {

@@ -23,17 +23,32 @@ const options = [
     ],
     plugins: [
       json(),
-      typescript({ tsconfig: './tsconfig.build.json', outputToFilesystem: false }),
+      typescript({
+        tsconfig: './tsconfig.build.json',
+        outputToFilesystem: false,
+        noEmitOnError: true, // Fail build on TS errors
+        sourceMap: true,
+        compilerOptions: {
+          module: 'NodeNext',
+          moduleResolution: 'NodeNext',
+        },
+      }),
       resolve(),
       commonjs(),
     ],
     external: ['@arturwojnar/hermes', 'postgres'],
     onwarn(warning, warn) {
-      // Check the warning code
+      // Fail on TS errors
+      if (warning.code === 'PLUGIN_WARNING' && warning.plugin === 'typescript') {
+        throw new Error(warning.message)
+      }
+
+      // Check for circular dependencies
       if (warning.code === 'CIRCULAR_DEPENDENCY' && /node_modules/.test(warning.message)) {
         // Ignore circular dependencies of modules in node_modules
         return
       }
+
       // For all other warnings, print them to the console
       warn(warning)
     },
