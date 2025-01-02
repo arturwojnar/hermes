@@ -1,11 +1,17 @@
 import { Sql } from 'postgres'
 
-type EventEnvelope<Event> = {
+type HermesMessageEnvelope<Message> = {
   position: number | bigint
   messageId: string
   messageType: string
   lsn: string
-  event: Event
+  message: Message
+}
+
+type MessageEnvelope<Message> = {
+  messageId: string
+  messageType: string
+  message: Message
 }
 
 type InsertResult = {
@@ -18,10 +24,10 @@ type InsertResult = {
 
 type Start = () => Promise<Stop>
 type Stop = () => Promise<void>
-type Publish<Event> = (event: EventEnvelope<Event> | EventEnvelope<Event>[]) => Promise<void>
-type IOutboxConsumer<Event> = {
+type Publish<Message> = (message: MessageEnvelope<Message> | MessageEnvelope<Message>[]) => Promise<void>
+type IOutboxConsumer<Message> = {
   start: Start
-  publish: Publish<Event>
+  publish: Publish<Message>
   getDbConnection(): Sql
 }
 type NowFunction = () => Date
@@ -32,10 +38,11 @@ type HermesSql = Sql<{
 
 export type {
   ErrorCallback,
-  EventEnvelope,
+  HermesMessageEnvelope,
   HermesSql,
   InsertResult,
   IOutboxConsumer,
+  MessageEnvelope,
   NowFunction,
   Publish,
   Start,

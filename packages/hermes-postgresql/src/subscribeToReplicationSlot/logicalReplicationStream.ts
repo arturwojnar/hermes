@@ -4,6 +4,7 @@ import { CancellationPromise, noop } from '@arturwojnar/hermes'
 import { pipe } from 'fp-ts/lib/function.js'
 import type { Error } from 'postgres'
 import { convertBigIntToLsn, incrementWAL } from '../common/lsn.js'
+import { HermesSql } from '../common/types.js'
 import { onData as _onData } from './onData.js'
 import { sendStandbyStatusUpdate } from './sendStandbyStatusUpdate.js'
 import { addInsert, createTransaction, emptyTransaction } from './transaction/transaction.js'
@@ -15,7 +16,6 @@ import {
   type LogicalReplicationState,
   type OnDataProcessingResult,
 } from './types.js'
-import { HermesSql } from '../common/types.js'
 
 export type LogicalReplicationParams<InsertResult> = {
   state: LogicalReplicationState
@@ -49,14 +49,12 @@ const startLogicalReplication = async <InsertResult>(params: LogicalReplicationP
   const storeResult = (result: OnDataProcessingResult<InsertResult>) => {
     if (result.messageType === MessageType.Begin) {
       currentTransaction = createTransaction<InsertResult>(result.transactionId, result.lsn, result.timestamp)
-      console.log(result)
     } else if (result.messageType === MessageType.Insert) {
-      console.log(result)
       // currentTransaction.results = [...currentTransaction.results, result.result]
       addInsert(currentTransaction, result.result)
     } else if (result.messageType === MessageType.Commit) {
       // currentTransaction.lsn = result.transactionEndLsn
-      console.log('storeResult - Commit')
+      // console.log('storeResult - Commit')
     }
 
     return result

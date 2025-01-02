@@ -51,20 +51,17 @@
     {
       "type": "node",
       "request": "launch",
-      "name": "test2",
+      "name": "postgres test",
       "runtimeExecutable": "node",
-      "runtimeArgs": ["--experimental-vm-modules", "${workspaceRoot}/node_modules/.bin/jest"],
-      "cwd": "${workspaceFolder}",
-      "args": [
-        "-c",
-        "${workspaceFolder}/packages/hermes-postgresql/jest.config.js",
-        "--maxConcurrency=1",
-        "--runInBand",
-        "--detectOpenHandles",
-        "--colors",
-        "--verbose"
-      ],
-      "internalConsoleOptions": "openOnSessionStart"
+      "runtimeArgs": ["--experimental-vm-modules"],
+      "program": "${workspaceRoot}/node_modules/.bin/jest",
+      "cwd": "${workspaceFolder}/packages/hermes-postgresql",
+      "args": ["--colors", "--verbose", "--runInBand", "--detectOpenHandles", "--config", "jest.config.js"],
+      "console": "integratedTerminal",
+      "env": {
+        "NODE_OPTIONS": "--experimental-vm-modules",
+        "NODE_ENV": "test"
+      }
     },
     {
       "cwd": "${workspaceFolder}/packages/hermes-postgresql",

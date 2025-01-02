@@ -1,12 +1,16 @@
 import { swallow } from '@arturwojnar/hermes'
-import { PostgreSqlContainer } from '@testcontainers/postgresql'
+import { PostgreSqlContainer, StartedPostgreSqlContainer } from '@testcontainers/postgresql'
 import wrapper from 'postgres'
 
 let instances = 0
 
 export const postgres = async (
-  test: (sql: wrapper.Sql, onDispose: (fn: () => Promise<void>) => void) => Promise<void | never>,
-  version = '16.3',
+  test: (
+    sql: wrapper.Sql,
+    container: StartedPostgreSqlContainer,
+    onDispose: (fn: () => Promise<void>) => void,
+  ) => Promise<void | never>,
+  version = '17.2',
 ) => {
   const container = await new PostgreSqlContainer(`postgres:${version}-alpine`)
     // , 'max_wal_senders=10', 'max_replication_slots=10'
@@ -31,9 +35,12 @@ export const postgres = async (
       database: container.getDatabase(),
     })
 
-    await test(sql, onDispose)
+    await test(sql, container, onDispose)
+  } catch (error) {
+    console.log(1)
+    throw error
   } finally {
-    await Promise.all(disposable.map((fn) => swallow(fn)))
+    await swallow(() => Promise.all(disposable.map((fn) => swallow(fn))))
     await swallow(() => container.stop())
     instances--
     console.info(`${instances} instances is up.`)

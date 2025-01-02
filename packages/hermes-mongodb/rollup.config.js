@@ -23,12 +23,26 @@ const options = [
     ],
     plugins: [
       json(),
-      typescript({ tsconfig: './tsconfig.build.json', outputToFilesystem: false }),
+      typescript({
+        tsconfig: './tsconfig.build.json',
+        outputToFilesystem: false,
+        noEmitOnError: true, // Fail build on TS errors
+        sourceMap: true,
+        compilerOptions: {
+          module: 'NodeNext',
+          moduleResolution: 'NodeNext',
+        },
+      }),
       resolve(),
       commonjs(),
     ],
     external: ['@arturwojnar/hermes', 'mongodb'],
     onwarn(warning, warn) {
+      // Fail on TS errors
+      if (warning.code === 'PLUGIN_WARNING' && warning.plugin === 'typescript') {
+        throw new Error(warning.message)
+      }
+
       // Check the warning code
       if (warning.code === 'CIRCULAR_DEPENDENCY' && /node_modules/.test(warning.message)) {
         // Ignore circular dependencies of modules in node_modules

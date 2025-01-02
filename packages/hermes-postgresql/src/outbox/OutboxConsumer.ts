@@ -1,19 +1,27 @@
 import { Duration, swallow } from '@arturwojnar/hermes'
 import assert from 'assert'
-import { Options, PostgresType } from 'postgres'
+import { json } from 'fp-ts'
+import { Options, PostgresType, Sql } from 'postgres'
 import { PublicationName, SlotName } from '../common/consts.js'
 import { ConsumerCreationParams } from '../common/ConsumerCreationParams.js'
 import { Lsn } from '../common/lsn.js'
-import { EventEnvelope, HermesSql, InsertResult, IOutboxConsumer, Stop } from '../common/types.js'
+import {
+  HermesMessageEnvelope,
+  HermesSql,
+  InsertResult,
+  IOutboxConsumer,
+  MessageEnvelope,
+  Stop,
+} from '../common/types.js'
 import { startLogicalReplication } from '../subscribeToReplicationSlot/logicalReplicationStream.js'
 import { LogicalReplicationState } from '../subscribeToReplicationSlot/types.js'
 import { migrate } from './migrate.js'
 
-export class OutboxConsumer<Event> implements IOutboxConsumer<Event> {
+export class OutboxConsumer<Message> implements IOutboxConsumer<Message> {
   private _sql: HermesSql | null = null
 
   constructor(
-    private readonly _params: ConsumerCreationParams<Event>,
+    private readonly _params: ConsumerCreationParams<Message>,
     private readonly _createClient: (options: Options<Record<string, PostgresType>>) => HermesSql,
   ) {}
 
@@ -67,9 +75,6 @@ export class OutboxConsumer<Event> implements IOutboxConsumer<Event> {
         WHERE "consumerName"=${consumerName} AND "partitionKey"=${partitionKey}
       `
     console.log(lastProcessedLsn)
-    console.info(restartLsnResults?.[0])
-    console.info(restartLsn)
-    console.info(lastProcessedLsn)
 
     const replicationState: LogicalReplicationState = {
       lastProcessedLsn: lastProcessedLsn,
@@ -90,12 +95,12 @@ export class OutboxConsumer<Event> implements IOutboxConsumer<Event> {
       },
       onInserted: async (transaction) => {
         await sql.begin(async (sql) => {
-          const messages = transaction.results.map<EventEnvelope<Event>>((result) => ({
+          const messages = transaction.results.map<HermesMessageEnvelope<Message>>((result) => ({
             position: result.position,
             messageId: result.messageId,
             messageType: result.messageType,
             lsn: transaction.lsn,
-            event: JSON.parse(result.payload) as Event,
+            message: JSON.parse(result.payload) as Message,
           }))
 
           await publish(messages)
@@ -108,11 +113,28 @@ export class OutboxConsumer<Event> implements IOutboxConsumer<Event> {
 
     return async () => {
       await swallow(() => sql.end({ timeout: Duration.ofSeconds(5).ms }))
-      await swallow(() => subscribeSql.end({ timeout: Duration.ofSeconds(5).ms }))
+      // await swallow(() => subscribeSql.end({ timeout: Duration.ofSeconds(5).ms }))
     }
   }
-  // Publish<Event> = (event: EventEnvelope<Event> | EventEnvelope<Event>[]) => Promise<void>
-  async publish(event: EventEnvelope<Event> | EventEnvelope<Event>[]): Promise<void> {
-    await Promise.resolve(event)
+
+  async publish(
+    message: MessageEnvelope<Message> | MessageEnvelope<Message>[],
+    partitionKey = 'default',
+  ): Promise<void> {
+    assert(this._sql)
+
+    if (Array.isArray(message)) {
+      await this._sql.begin(async (sql) => {
+        for (const m of message) {
+          await this._publishOne(sql, m, partitionKey)
+        }
+      })
+    } else {
+      await this._publishOne(this._sql, message, partitionKey)
+    }
+  }
+
+  private async _publishOne(sql: Sql, message: MessageEnvelope<Message>, partitionKey = 'default') {
+    await sql`INSERT INTO outbox ("messageId", "messageType", "partitionKey", "data") VALUES(${message.messageId}, ${message.messageType}, ${partitionKey}, ${sql.json(json)}) RETURNING *`
   }
 }

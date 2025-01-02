@@ -14,23 +14,24 @@ export default {
       'ts-jest',
       {
         useESM: true,
-        tsconfig: 'tsconfig.jest.json',
+        tsconfig: './tsconfig.jest.json',
       },
     ],
   },
-  testMatch: ['**/*/*.test.ts'],
+  testMatch: ['**/*/*.test.ts', 'packages/hermes-postgresql/test/*.test.ts'],
   testEnvironment: 'node',
   testTimeout: 20000,
+  moduleDirectories: ['node_modules', 'src'],
   moduleNameMapper: {
+    '^(\\.{1,2}/.*)\\.js$': '$1',
     ...(paths
       ? pathsToModuleNameMapper(paths, {
           prefix: '<rootDir>',
           useESM: true,
         })
       : {}),
-    '^(\\.{1,2}/.*)\\.js$': '$1',
   },
-  modulePaths: ['<rootDir>'],
+  // modulePaths: ['<rootDir>'],
   collectCoverage: true,
   coverageDirectory: 'coverage',
 }

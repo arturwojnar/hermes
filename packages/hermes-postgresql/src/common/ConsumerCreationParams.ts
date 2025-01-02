@@ -1,11 +1,11 @@
 import { Options, PostgresType } from 'postgres'
 import { AsyncOrSync } from 'ts-essentials'
-import { EventEnvelope, NowFunction } from './types.js'
+import { HermesMessageEnvelope, NowFunction } from './types.js'
 
-type ConsumerCreationParams<Event> = {
+type ConsumerCreationParams<Message> = {
   getOptions: () => Options<Record<string, PostgresType>>
   // db: Db
-  publish: (event: EventEnvelope<Event> | EventEnvelope<Event>[]) => AsyncOrSync<void> | never
+  publish: (message: HermesMessageEnvelope<Message> | HermesMessageEnvelope<Message>[]) => AsyncOrSync<void> | never
   /**
    * Consumer name.
    */
