@@ -1,3 +1,4 @@
+import { NonEmptyString } from '@arturwojnar/hermes'
 import type { Lsn } from '../common/lsn.js'
 
 enum MessageType {
@@ -29,6 +30,7 @@ type ColumnType = 'bigint' | 'text' | 'jsonb' | 'uint'
 type ColumnConfig<Keys extends string | number | symbol = string | number | symbol> = {
   [key in Keys]: ColumnType
 }
+type MessageId = NonEmptyString<'MessageId'>
 
 type OnDataProcessingResult<InsertResult> =
   | {
@@ -52,6 +54,8 @@ type OnDataProcessingResult<InsertResult> =
   | {
       topLevelType: TopLevelType.XLogData
       messageType: MessageType.Commit
+      commitLsn: Lsn
+      transactionEndLsn: Lsn
       commitTimestamp: Date
     }
   | {
@@ -67,8 +71,11 @@ type Transaction<InsertResult = unknown> = {
   results: InsertResult[]
 }
 
-type OnCommit<InsertResult = unknown> = (transaction: Transaction<InsertResult>) => Promise<void>
-type OnInserted<InsertResult = unknown> = (transaction: Transaction<InsertResult>) => Promise<void>
+// type OnCommit<InsertResult = unknown> = (transaction: Transaction<InsertResult>) => Promise<void>
+type OnInsert<InsertResult = unknown> = (
+  transaction: Transaction<InsertResult>,
+  acknowledge: () => void,
+) => Promise<void>
 
 const TopLevelTypeValues = Object.values(TopLevelType)
 const MessageTypeValues = Object.values(MessageType)
@@ -98,7 +105,7 @@ export {
   TopLevelType,
   type ColumnConfig,
   type ColumnType,
-  type OnCommit,
-  type OnInserted,
+  type MessageId,
+  type OnInsert,
   type Transaction,
 }

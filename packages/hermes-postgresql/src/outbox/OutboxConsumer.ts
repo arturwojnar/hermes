@@ -16,6 +16,7 @@ import {
 import { startLogicalReplication } from '../subscribeToReplicationSlot/logicalReplicationStream.js'
 import { LogicalReplicationState } from '../subscribeToReplicationSlot/types.js'
 import { migrate } from './migrate.js'
+import { createPublishingQueue } from './publishingQueue.js'
 
 export class OutboxConsumer<Message> implements IOutboxConsumer<Message> {
   private _sql: HermesSql | null = null
@@ -33,7 +34,20 @@ export class OutboxConsumer<Message> implements IOutboxConsumer<Message> {
   async start(): Promise<Stop> {
     const { publish, getOptions, consumerName } = this._params
     const partitionKey = this._params.partitionKey || 'default'
+    const publishingQueue = createPublishingQueue<InsertResult>(async ({ transaction }) => {
+      await sql.begin(async (sql) => {
+        const messages = transaction.results.map<HermesMessageEnvelope<Message>>((result) => ({
+          position: result.position,
+          messageId: result.messageId,
+          messageType: result.messageType,
+          lsn: transaction.lsn,
+          message: JSON.parse(result.payload) as Message,
+        }))
 
+        await publish(messages)
+        await sql`UPDATE "outboxConsumer" SET "lastProcessedLsn"=${transaction.lsn}, "lastUpdatedAt"=NOW() WHERE "consumerName"=${consumerName}`
+      })
+    })
     const sql = (this._sql = this._createClient({
       ...getOptions(),
     }))
@@ -83,7 +97,7 @@ export class OutboxConsumer<Message> implements IOutboxConsumer<Message> {
       slotName: SlotName,
     }
 
-    startLogicalReplication<InsertResult>({
+    await startLogicalReplication<InsertResult>({
       state: replicationState,
       sql: subscribeSql,
       columnConfig: {
@@ -93,22 +107,22 @@ export class OutboxConsumer<Message> implements IOutboxConsumer<Message> {
         partitionKey: 'text',
         payload: 'jsonb',
       },
-      onInserted: async (transaction) => {
-        await sql.begin(async (sql) => {
-          const messages = transaction.results.map<HermesMessageEnvelope<Message>>((result) => ({
-            position: result.position,
-            messageId: result.messageId,
-            messageType: result.messageType,
-            lsn: transaction.lsn,
-            message: JSON.parse(result.payload) as Message,
-          }))
+      onInsert: async (transaction, acknowledge) => {
+        publishingQueue.queue({ transaction, acknowledge })
+        await publishingQueue.publishMessages()
+        // await sql.begin(async (sql) => {
+        //   const messages = transaction.results.map<HermesMessageEnvelope<Message>>((result) => ({
+        //     position: result.position,
+        //     messageId: result.messageId,
+        //     messageType: result.messageType,
+        //     lsn: transaction.lsn,
+        //     message: JSON.parse(result.payload) as Message,
+        //   }))
 
-          await publish(messages)
-          await sql`UPDATE "outboxConsumer" SET "lastProcessedLsn"=${transaction.lsn}, "lastUpdatedAt"=NOW() WHERE "consumerName"=${consumerName}`
-        })
+        //   await publish(messages)
+        //   await sql`UPDATE "outboxConsumer" SET "lastProcessedLsn"=${transaction.lsn}, "lastUpdatedAt"=NOW() WHERE "consumerName"=${consumerName}`
+        // })
       },
-    }).catch((error) => {
-      console.error(error)
     })
 
     return async () => {

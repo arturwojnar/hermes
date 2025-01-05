@@ -1,4 +1,5 @@
 import { toTimestamp } from '../common/helpers.js'
+import { constructLsn } from '../common/lsn.js'
 import { offset } from '../common/offset.js'
 import type { OnDataProcessingResult } from './types.js'
 import { Bytes, MessageType, TopLevelType } from './types.js'
@@ -11,7 +12,9 @@ import { Bytes, MessageType, TopLevelType } from './types.js'
  * Int64 (TimestampTz). Commit timestamp of the transaction. The value is in number of microseconds since PostgreSQL epoch (2000-01-01).
  */
 const processCommitMessage = <InsertResult>(data: Buffer): OnDataProcessingResult<InsertResult> => {
-  const pos = offset(Bytes.Int8 + Bytes.Int8 + Bytes.Int64)
+  const pos = offset(Bytes.Int8 + Bytes.Int8)
+  const commitLsn = constructLsn(data.subarray(pos.value(), pos.addInt64()))
+  const transactionEndLsn = constructLsn(data.subarray(pos.value(), pos.addInt64()))
   // const commitLsn = constructLsn(data.readUInt32BE(pos.value()), data.readUInt32BE(pos.addInt32()))
   // const transactionEndLsn = constructLsn(data.subarray(pos.value(), pos.))
   const commitTimestamp = toTimestamp(data.readBigInt64BE(pos.value()))
@@ -21,6 +24,8 @@ const processCommitMessage = <InsertResult>(data: Buffer): OnDataProcessingResul
   return {
     topLevelType: TopLevelType.XLogData,
     messageType: MessageType.Commit,
+    commitLsn,
+    transactionEndLsn,
     commitTimestamp,
   }
 }

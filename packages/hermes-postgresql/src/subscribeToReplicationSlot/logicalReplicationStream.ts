@@ -1,6 +1,6 @@
 /* -eslint-disable  @typescript-eslint/no-unused-vars  */
 
-import { CancellationPromise, noop } from '@arturwojnar/hermes'
+import { noop } from '@arturwojnar/hermes'
 import { pipe } from 'fp-ts/lib/function.js'
 import type { Error } from 'postgres'
 import { convertBigIntToLsn, incrementWAL } from '../common/lsn.js'
@@ -11,7 +11,7 @@ import { addInsert, createTransaction, emptyTransaction } from './transaction/tr
 import {
   ColumnConfig,
   MessageType,
-  OnInserted,
+  OnInsert,
   TopLevelType,
   type LogicalReplicationState,
   type OnDataProcessingResult,
@@ -21,12 +21,12 @@ export type LogicalReplicationParams<InsertResult> = {
   state: LogicalReplicationState
   sql: HermesSql
   columnConfig: ColumnConfig<keyof InsertResult>
-  onInserted: OnInserted<InsertResult>
+  onInsert: OnInsert<InsertResult>
 }
 
 const startLogicalReplication = async <InsertResult>(params: LogicalReplicationParams<InsertResult>) => {
   const { state, sql } = params
-  const onInserted = params.onInserted || noop
+  const onInsert = params.onInsert || noop
   const location = typeof state.lastProcessedLsn === 'undefined' ? '0/00000000' : state.lastProcessedLsn
   let currentTransaction = emptyTransaction<InsertResult>(location)
   const stream = await sql
@@ -34,7 +34,6 @@ const startLogicalReplication = async <InsertResult>(params: LogicalReplicationP
       `START_REPLICATION SLOT hermes_slot LOGICAL ${convertBigIntToLsn(incrementWAL(location))} (proto_version '1', publication_names '${params.state.publication}')`,
     )
     .writable()
-  let processingPromise = CancellationPromise.resolved(0)
   const curriedOnData = _onData(params.columnConfig)
   const onData = (message: Buffer) => curriedOnData(message)
   const acknowledgeLastLsn = sendStandbyStatusUpdate(stream, () => state.lastProcessedLsn)
@@ -48,11 +47,14 @@ const startLogicalReplication = async <InsertResult>(params: LogicalReplicationP
 
   const storeResult = (result: OnDataProcessingResult<InsertResult>) => {
     if (result.messageType === MessageType.Begin) {
+      console.info(`[store] BEGIN ${result.transactionId} / ${result.lsn}`)
       currentTransaction = createTransaction<InsertResult>(result.transactionId, result.lsn, result.timestamp)
     } else if (result.messageType === MessageType.Insert) {
       // currentTransaction.results = [...currentTransaction.results, result.result]
+      console.info(`[store] INSERT ${JSON.stringify(result.result)}`)
       addInsert(currentTransaction, result.result)
     } else if (result.messageType === MessageType.Commit) {
+      console.info(`[store] COMMIT ${result.commitLsn}`)
       // currentTransaction.lsn = result.transactionEndLsn
       // console.log('storeResult - Commit')
     }
@@ -60,35 +62,29 @@ const startLogicalReplication = async <InsertResult>(params: LogicalReplicationP
     return result
   }
 
-  const handleResult = async (result: OnDataProcessingResult<InsertResult>) => {
+  const handleResult = (result: OnDataProcessingResult<InsertResult>) => {
     if (result.topLevelType === TopLevelType.PrimaryKeepaliveMessage && result.shouldPong) {
       acknowledgeLastLsn()
     } else if (result.topLevelType === TopLevelType.XLogData && result.messageType === MessageType.Commit) {
-      await onInserted(currentTransaction)
+      const commitLsn = currentTransaction.lsn
+      const acknowledge = sendStandbyStatusUpdate(stream, () => commitLsn)
 
-      commitTransaction()
+      onInsert(currentTransaction, acknowledge)
+
+      // commitTransaction()
 
       state.lastProcessedLsn = currentTransaction.lsn
       currentTransaction = emptyTransaction(state.lastProcessedLsn)
     }
   }
 
-  stream.on('data', async (message: Buffer) => {
-    await processingPromise
-    processingPromise = new CancellationPromise()
-
-    try {
-      await pipe(message, onData, storeResult, handleResult)
-    } finally {
-      processingPromise.resolve(0)
-    }
+  stream.on('data', (message: Buffer) => {
+    pipe(message, onData, storeResult, handleResult)
   })
   stream.on('error', (error: Error) => {
-    processingPromise.resolve(0)
     console.error(error)
   })
   stream.on('close', () => {
-    processingPromise.resolve(0)
     close().catch(noop)
   })
 }

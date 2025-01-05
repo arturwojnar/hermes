@@ -3,30 +3,34 @@ import { swallow } from '@arturwojnar/hermes'
 import { createOutboxConsumer } from './outbox/createOutboxConsumer.js'
 
 const test = async () => {
-  const hermes = createOutboxConsumer({
-    getOptions() {
-      return {
-        host: 'localhost',
-        port: 5434,
-        database: 'hermes',
-        user: 'hermes',
-        password: 'hermes',
-      }
-    },
-    publish: (event) => {
-      return Promise.resolve()
-    },
-    consumerName: 'app',
-  })
+  try {
+    const hermes = createOutboxConsumer({
+      getOptions() {
+        return {
+          host: 'localhost',
+          port: 5434,
+          database: 'hermes',
+          user: 'hermes',
+          password: 'hermes',
+        }
+      },
+      publish: (event) => {
+        return Promise.resolve()
+      },
+      consumerName: 'app',
+    })
 
-  const stop = await hermes.start()
-  const sql = hermes.getDbConnection()
+    const stop = await hermes.start()
+    const sql = hermes.getDbConnection()
 
-  process.on('SIGTERM', () => {
-    stop().catch(console.error)
-  })
+    process.on('SIGTERM', () => {
+      stop().catch(console.error)
+    })
 
-  const i = 99999
+    const i = 99999
+  } catch (e) {
+    console.error(e) // code 55006 PostgresError routine ='ReplicationSlotAcquire'
+  }
 
   // while (++i) {
   //   await setTimeout(Duration.ofSeconds(5).ms)
