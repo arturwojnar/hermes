@@ -1,7 +1,6 @@
 import { Duration, swallow } from '@arturwojnar/hermes'
 import assert from 'assert'
-import { json } from 'fp-ts'
-import { Options, PostgresType, Sql } from 'postgres'
+import { JSONValue, Options, PostgresType, Sql } from 'postgres'
 import { PublicationName, SlotName } from '../common/consts.js'
 import { ConsumerCreationParams } from '../common/ConsumerCreationParams.js'
 import { Lsn } from '../common/lsn.js'
@@ -18,7 +17,7 @@ import { LogicalReplicationState } from '../subscribeToReplicationSlot/types.js'
 import { migrate } from './migrate.js'
 import { createPublishingQueue } from './publishingQueue.js'
 
-export class OutboxConsumer<Message> implements IOutboxConsumer<Message> {
+export class OutboxConsumer<Message extends JSONValue> implements IOutboxConsumer<Message> {
   private _sql: HermesSql | null = null
 
   constructor(
@@ -149,6 +148,6 @@ export class OutboxConsumer<Message> implements IOutboxConsumer<Message> {
   }
 
   private async _publishOne(sql: Sql, message: MessageEnvelope<Message>, partitionKey = 'default') {
-    await sql`INSERT INTO outbox ("messageId", "messageType", "partitionKey", "data") VALUES(${message.messageId}, ${message.messageType}, ${partitionKey}, ${sql.json(json)}) RETURNING *`
+    await sql`INSERT INTO outbox ("messageId", "messageType", "partitionKey", "data") VALUES(${message.messageId}, ${message.messageType}, ${partitionKey}, ${sql.json(message.message)})`
   }
 }

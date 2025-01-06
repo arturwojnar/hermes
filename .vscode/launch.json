@@ -56,7 +56,15 @@
       "runtimeArgs": ["--experimental-vm-modules"],
       "program": "${workspaceRoot}/node_modules/.bin/jest",
       "cwd": "${workspaceFolder}/packages/hermes-postgresql",
-      "args": ["--colors", "--verbose", "--runInBand", "--detectOpenHandles", "--config", "jest.config.js"],
+      "args": [
+        "--colors",
+        "--verbose",
+        "--runInBand",
+        "--forceExit",
+        "--detectOpenHandles",
+        "--config",
+        "jest.config.js"
+      ],
       "console": "integratedTerminal",
       "env": {
         "NODE_OPTIONS": "--experimental-vm-modules",

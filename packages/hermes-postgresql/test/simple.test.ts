@@ -1,20 +1,14 @@
 // import { OutboxConsumersCollectionName, OutboxMessagesCollectionName } from '../src/consts.js'
 import { expect, jest, test } from '@jest/globals'
 import { setTimeout } from 'node:timers/promises'
-import { Sql } from 'postgres'
 import { convertLsnToBigInt, Lsn } from '../src/common/lsn.js'
 import { createOutboxConsumer } from '../src/index.js'
 import { MedicineAdded, MedicineEvent } from './events.js'
+import { getRestartLsn } from './getRestartLsn.js'
 import { postgres } from './postgresql.js'
+import { Duration } from '@arturwojnar/hermes'
 
-jest.setTimeout(5 * 60 * 1000)
-
-const getRestartLsn = async (sql: Sql) => {
-  const restartLsnResults = await sql<
-    [{ restart_lsn: Lsn }]
-  >`SELECT * FROM pg_replication_slots WHERE slot_name = 'hermes_slot';`
-  return restartLsnResults?.[0]?.restart_lsn || '0/00000000'
-}
+jest.setTimeout(Duration.ofMinutes(5).ms)
 
 test('Sending one event works', async () => {
   await postgres(async (sql, container, onDispose) => {

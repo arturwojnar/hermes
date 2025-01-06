@@ -18,7 +18,7 @@ export default {
       },
     ],
   },
-  testMatch: ['**/*/*.test.ts', 'packages/hermes-postgresql/test/*.test.ts'],
+  testMatch: ['**/*/*.test.ts'],
   testEnvironment: 'node',
   testTimeout: 20000,
   moduleDirectories: ['node_modules', 'src'],

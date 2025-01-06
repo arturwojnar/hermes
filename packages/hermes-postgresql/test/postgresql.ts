@@ -38,6 +38,7 @@ export const postgres = async (
     await test(sql, container, onDispose)
   } catch (error) {
     console.log(1)
+    // setTimeout(() => process.exit(1), 500)
     throw error
   } finally {
     await swallow(() => Promise.all(disposable.map((fn) => swallow(fn))))

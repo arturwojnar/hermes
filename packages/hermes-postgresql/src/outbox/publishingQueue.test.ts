@@ -139,9 +139,11 @@ describe('publishingQueue', () => {
 
     messages.forEach((msg) => queue(msg))
 
+    // add a message in the meantime
     setTimeoutCallback(() => {
       queue(laterMessage)
     }, 330)
+
     await publishMessages()
 
     expect(mockPublish).toHaveBeenCalledTimes(6)

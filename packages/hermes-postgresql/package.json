@@ -13,7 +13,7 @@
     "fix:prettier": "prettier --write \"**/**/!(*.d).{ts,json,md}\"",
     "lint-fix": "eslint --fix \"src/**/*.{ts,tsx}\"",
     "prepare": "husky",
-    "test": "node --experimental-vm-modules ../../node_modules/.bin/jest --colors --coverage --verbose --maxConcurrency=5",
+    "test": "node --experimental-vm-modules ../../node_modules/.bin/jest --colors --coverage --verbose --forceExit --maxConcurrency=1",
     "typecheck": "tsc --noEmit",
     "typedoc": "typedoc"
   },
