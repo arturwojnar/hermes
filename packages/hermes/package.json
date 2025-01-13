@@ -65,5 +65,8 @@
   "devDependencies": {
     "@jest/globals": "~29.7.0",
     "ts-essentials": "~10.0.3"
+  },
+  "dependencies": {
+    "uuid": "~11.0.4"
   }
 }

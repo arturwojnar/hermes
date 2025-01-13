@@ -4,8 +4,10 @@ export {
   assertDate,
   assertNever,
   parseNonEmptyString,
+  parseUuid4,
   type Flavour,
   type NonEmptyString,
+  type Uuid4String,
   type WithFlavour,
   type WithoutFlavour,
 } from './core/typing/index.js'
