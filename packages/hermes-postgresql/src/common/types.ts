@@ -1,4 +1,4 @@
-import { Sql } from 'postgres'
+import { Sql, TransactionSql } from 'postgres'
 
 type HermesMessageEnvelope<Message> = {
   position: number | bigint
@@ -24,7 +24,14 @@ type InsertResult = {
 
 type Start = () => Promise<Stop>
 type Stop = () => Promise<void>
-type Publish<Message> = (message: MessageEnvelope<Message> | MessageEnvelope<Message>[]) => Promise<void>
+type PublishOptions = {
+  partitionKey?: string
+  tx?: TransactionSql
+}
+type Publish<Message> = (
+  message: MessageEnvelope<Message> | MessageEnvelope<Message>[],
+  options?: PublishOptions,
+) => Promise<void>
 type IOutboxConsumer<Message> = {
   start: Start
   publish: Publish<Message>
@@ -45,6 +52,7 @@ export type {
   MessageEnvelope,
   NowFunction,
   Publish,
+  PublishOptions,
   Start,
   Stop,
 }

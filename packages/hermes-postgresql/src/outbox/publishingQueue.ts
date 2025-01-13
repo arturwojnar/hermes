@@ -1,3 +1,5 @@
+import { assertNever, Duration } from '@arturwojnar/hermes'
+import { setTimeout } from 'node:timers/promises'
 import { Lsn } from '../common/lsn.js'
 import { Transaction } from '../subscribeToReplicationSlot/types.js'
 
@@ -6,9 +8,19 @@ type MessageToPublish<InsertResult> = {
   acknowledge: () => void
 }
 
+type PublishingQueueOptions<InsertResult> = {
+  waitAfterFailedPublish?: Duration
+  onFailedPublish?: (tx: Transaction<InsertResult>) => Promise<void>
+}
+
+type PublishResult = 'published' | 'failed' | 'exhausted'
+
 const createPublishingQueue = <InsertResult>(
   publish: (messageToPublish: MessageToPublish<InsertResult>) => Promise<void>,
+  options?: PublishingQueueOptions<InsertResult>,
 ) => {
+  const waitAfterFailedPublish = options?.waitAfterFailedPublish || Duration.ofSeconds(1)
+  const onFailedPublish = options?.onFailedPublish || (() => Promise.resolve())
   const ids = new Set<Lsn>()
   // LIFO
   const messages = new Array<MessageToPublish<InsertResult>>()
@@ -32,9 +44,9 @@ const createPublishingQueue = <InsertResult>(
     ids.delete(oldest.transaction.lsn)
   }
 
-  const publishOldestMessage = async () => {
+  const publishOldestMessage = async (): Promise<PublishResult> => {
     if (messages.length === 0) {
-      return false
+      return 'exhausted'
     }
 
     const oldest = messages[0]
@@ -44,10 +56,9 @@ const createPublishingQueue = <InsertResult>(
       oldest.acknowledge()
       unqueueOldest()
       console.info(`Published ${oldest.transaction.lsn}`)
-      return true
+      return 'published'
     } catch (error) {
-      console.error(error)
-      throw error
+      return 'failed'
     }
   }
 
@@ -59,9 +70,27 @@ const createPublishingQueue = <InsertResult>(
     isPublishing = true
 
     try {
-      while (await publishOldestMessage()) {
-        console.log(`A message published successfully.`)
-      }
+      do {
+        const result = await publishOldestMessage()
+
+        switch (result) {
+          case 'published':
+            continue
+          case 'failed':
+            await onFailedPublish(messages[0].transaction)
+
+            if (waitAfterFailedPublish) {
+              await setTimeout(waitAfterFailedPublish.ms)
+            }
+
+            break
+          case 'exhausted':
+            isPublishing = false
+            break
+          default:
+            assertNever(result)
+        }
+      } while (isPublishing)
     } finally {
       isPublishing = false
     }

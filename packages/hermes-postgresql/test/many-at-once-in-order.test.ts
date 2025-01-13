@@ -49,6 +49,9 @@ test('Sending many events at once in order works', async () => {
         lastProcessedLsn: initialLsn,
         createdAt: expect.any(Date),
         lastUpdatedAt: expect.any(Date),
+        failedNextLsn: null,
+        lastProcessedPosition: null,
+        nextLsnRedeliveryCount: 0,
       },
     ])
 

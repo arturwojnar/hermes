@@ -10,6 +10,7 @@ import {
   InsertResult,
   IOutboxConsumer,
   MessageEnvelope,
+  PublishOptions,
   Stop,
 } from '../common/types.js'
 import { startLogicalReplication } from '../subscribeToReplicationSlot/logicalReplicationStream.js'
@@ -44,7 +45,12 @@ export class OutboxConsumer<Message extends JSONValue> implements IOutboxConsume
         }))
 
         await publish(messages)
-        await sql`UPDATE "outboxConsumer" SET "lastProcessedLsn"=${transaction.lsn}, "lastUpdatedAt"=NOW() WHERE "consumerName"=${consumerName}`
+
+        await sql`
+          UPDATE "outboxConsumer"
+          SET "lastProcessedLsn"=${transaction.lsn}, "lastUpdatedAt"=NOW()
+          WHERE "consumerName"=${consumerName}
+        `
       })
     })
     const sql = (this._sql = this._createClient({
@@ -62,14 +68,15 @@ export class OutboxConsumer<Message extends JSONValue> implements IOutboxConsume
         application_name: 'hermes-postgresql',
         replication: 'database',
       },
-      // onclose: async function() {
-      //   if (ended)
-      //     return
-      //   stream = null
-      //   state.pid = state.secret = undefined
-      //   connected(await init(sql, slot, options.publications))
-      //   subscribers.forEach(event => event.forEach(({ onsubscribe }) => onsubscribe()))
-      // },
+      onclose: async () => {
+        // await dropReplicationSlot(sql, 'hermes_slot')
+        // if (ended)
+        //   return
+        // stream = null
+        // state.pid = state.secret = undefined
+        // connected(await init(sql, slot, options.publications))
+        // subscribers.forEach(event => event.forEach(({ onsubscribe }) => onsubscribe()))
+      },
     })
 
     await migrate(sql)
@@ -124,6 +131,8 @@ export class OutboxConsumer<Message extends JSONValue> implements IOutboxConsume
       },
     })
 
+    // addDisposeOnSigterm(() => dropReplicationSlot(sql, 'hermes_slot'))
+
     return async () => {
       await swallow(() => sql.end({ timeout: Duration.ofSeconds(5).ms }))
       // await swallow(() => subscribeSql.end({ timeout: Duration.ofSeconds(5).ms }))
@@ -132,18 +141,27 @@ export class OutboxConsumer<Message extends JSONValue> implements IOutboxConsume
 
   async publish(
     message: MessageEnvelope<Message> | MessageEnvelope<Message>[],
-    partitionKey = 'default',
+    options?: PublishOptions,
   ): Promise<void> {
     assert(this._sql)
 
+    const partitionKey = options?.partitionKey || 'default'
+    const sql = options?.tx || this._sql
+
     if (Array.isArray(message)) {
-      await this._sql.begin(async (sql) => {
+      if ('savepoint' in sql) {
         for (const m of message) {
           await this._publishOne(sql, m, partitionKey)
         }
-      })
+      } else {
+        await sql.begin(async (sql) => {
+          for (const m of message) {
+            await this._publishOne(sql, m, partitionKey)
+          }
+        })
+      }
     } else {
-      await this._publishOne(this._sql, message, partitionKey)
+      await this._publishOne(sql, message, partitionKey)
     }
   }
 

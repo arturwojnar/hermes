@@ -1,3 +1,4 @@
+import { Duration } from '@arturwojnar/hermes'
 import { describe, expect, it, jest } from '@jest/globals'
 import { setTimeout as setTimeoutCallback } from 'timers'
 import { setTimeout } from 'timers/promises'
@@ -78,44 +79,79 @@ describe('publishingQueue', () => {
     expect(size()).toBe(0)
   })
 
-  it.skip('should handle publish failures', async () => {
+  it('should continue publishing after failed messages', async () => {
     const mockError = new Error('Publish failed')
+    const publishedMessages: Lsn[] = []
+    const mockPublish = jest
+      .fn<(messageToPublish: MessageToPublish<InsertResult>) => Promise<void>>()
+      .mockImplementationOnce(async () => {
+        throw mockError
+      })
+      .mockImplementation(async (message) => {
+        publishedMessages.push(message.transaction.lsn)
+      })
+
+    const mockFailedPublishCallback = jest
+      .fn(async (tx: Transaction<InsertResult>): Promise<void> => {})
+      .mockImplementation(async (tx: Transaction<InsertResult>): Promise<void> => {
+        return Promise.resolve()
+      })
+    const { queue, publishMessages } = createPublishingQueue(mockPublish, {
+      waitAfterFailedPublish: Duration.ofMiliseconds(1),
+      onFailedPublish: mockFailedPublishCallback,
+    })
+
+    const message1 = createMockMessage('0/1')
+    const message2 = createMockMessage('0/2')
+    const message3 = createMockMessage('0/3')
+
+    queue(message1)
+    queue(message2)
+    queue(message3)
+
+    await publishMessages()
+
+    // First message should have had a failed attempt before succeeding
+    expect(mockFailedPublishCallback).toHaveBeenCalledWith(message1.transaction)
+    expect(mockFailedPublishCallback).toHaveBeenCalledTimes(1)
+
+    // All messages should eventually be processed successfully
+    expect(publishedMessages).toEqual(['0/1', '0/2', '0/3'])
+    expect(message1.acknowledge).toHaveBeenCalled()
+    expect(message2.acknowledge).toHaveBeenCalled()
+    expect(message3.acknowledge).toHaveBeenCalled()
+  })
+
+  it('should keep retrying failed message until success', async () => {
+    const mockError = new Error('Publish failed')
+    const publishedMessages: Lsn[] = []
     const mockPublish = jest
       .fn<(messageToPublish: MessageToPublish<InsertResult>) => Promise<void>>()
       .mockRejectedValueOnce(mockError)
-      .mockImplementation(async () => {})
+      .mockRejectedValueOnce(mockError)
+      .mockImplementation(async (message) => {
+        publishedMessages.push(message.transaction.lsn)
+      })
 
-    const { queue, publishMessages } = createPublishingQueue(mockPublish)
+    const mockFailedPublishCallback = jest
+      .fn(async (tx: Transaction<InsertResult>): Promise<void> => {})
+      .mockImplementation(async (tx: Transaction<InsertResult>): Promise<void> => {
+        return Promise.resolve()
+      })
+    const { queue, publishMessages } = createPublishingQueue(mockPublish, {
+      waitAfterFailedPublish: Duration.ofMiliseconds(10),
+      onFailedPublish: mockFailedPublishCallback,
+    })
 
     const message = createMockMessage('0/1')
     queue(message)
 
-    await expect(publishMessages()).rejects.toThrow(mockError)
-    expect(message.acknowledge).not.toHaveBeenCalled()
-  })
-
-  it('should return false when no messages to publish', async () => {
-    const mockPublish = createMockPublish()
-    const { publishMessages } = createPublishingQueue(mockPublish)
-
     await publishMessages()
 
-    expect(mockPublish).not.toHaveBeenCalled()
-  })
-
-  it('should remove published message from queue', async () => {
-    const mockPublish = createMockPublish()
-    const queue = createPublishingQueue(mockPublish)
-
-    const message1 = createMockMessage('0/1')
-
-    queue.queue(message1)
-
-    expect(queue.size()).toBe(1)
-
-    await queue.publishMessages()
-
-    expect(queue.size()).toBe(0)
+    expect(mockPublish).toHaveBeenCalledTimes(3)
+    expect(mockFailedPublishCallback).toHaveBeenCalledTimes(2)
+    expect(message.acknowledge).toHaveBeenCalled()
+    expect(publishedMessages).toEqual(['0/1'])
   })
 
   it('should publish all queued messages until queue is empty', async () => {
@@ -154,5 +190,25 @@ describe('publishingQueue', () => {
 
     expect(laterMessage.acknowledge).toHaveBeenCalledTimes(1)
     expect(publishedMessages).toEqual(['0/1', '0/2', '0/3', '0/4', '0/5', '0/100'])
+  })
+
+  it('should prevent concurrent publishing', async () => {
+    const mockPublish = jest
+      .fn<(messageToPublish: MessageToPublish<InsertResult>) => Promise<void>>()
+      .mockImplementation(async () => await setTimeout(100))
+
+    const { queue, publishMessages } = createPublishingQueue(mockPublish)
+
+    queue(createMockMessage('0/1'))
+    queue(createMockMessage('0/2'))
+
+    // Start two concurrent publish operations
+    const publish1 = publishMessages()
+    const publish2 = publishMessages()
+
+    await Promise.all([publish1, publish2])
+
+    // Should only have published each message once despite concurrent calls
+    expect(mockPublish).toHaveBeenCalledTimes(2)
   })
 })

@@ -1,5 +1,4 @@
 /* -eslint-disable  @typescript-eslint/no-unused-vars */
-import { swallow } from '@arturwojnar/hermes'
 import { createOutboxConsumer } from './outbox/createOutboxConsumer.js'
 
 const test = async () => {
@@ -41,12 +40,13 @@ const test = async () => {
   // }
 }
 
-;(async () => {
-  await test()
-})().catch((error) => {
-  console.error(error)
-  swallow(stop)
-})
+// ;(async () => {
+//   await test()
+// })().catch((error) => {
+//   console.error(error)
+//   swallow(stop)
+// })
 
+export { type HermesMessageEnvelope, type MessageEnvelope } from './common/types.js'
 export { createOutboxConsumer } from './outbox/createOutboxConsumer.js'
 export { OutboxConsumer } from './outbox/OutboxConsumer.js'

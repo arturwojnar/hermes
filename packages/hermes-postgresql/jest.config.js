@@ -18,7 +18,7 @@ export default {
       },
     ],
   },
-  testMatch: ['**/*/*.test.ts'],
+  testMatch: ['**/*/*.test.ts', '<rootDir>/src/**/*.test.ts'],
   testEnvironment: 'node',
   testTimeout: 20000,
   moduleDirectories: ['node_modules', 'src'],
