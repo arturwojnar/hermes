@@ -1,5 +1,4 @@
-import { parseSemVer } from '@arturwojnar/hermes'
-import assert from 'assert'
+import { assert, parseSemVer } from '@arturwojnar/hermes'
 
 const OutboxMessagesCollectionName = '__outboxMessages'
 const OutboxConsumersCollectionName = '__outboxConsumers'
