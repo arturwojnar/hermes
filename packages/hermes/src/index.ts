@@ -3,6 +3,7 @@ export { AssertionError, HermesError, HermesErrorCode, NotSupportedMongoVersionE
 export {
   assertDate,
   assertNever,
+  literalObject,
   parseNonEmptyString,
   parseUuid4,
   type Flavour,
@@ -12,5 +13,5 @@ export {
   type WithoutFlavour,
 } from './core/typing/index.js'
 export { Duration } from './duration.js'
-export { addDisposeOnSigterm, isNil, noop, parseSemVer, swallow } from './utils/index.js'
+export { addDisposeOnSigterm, assert, isNil, noop, parseSemVer, swallow } from './utils/index.js'
 export { type PositiveInteger, type PositiveNumber } from './value-objects.js'

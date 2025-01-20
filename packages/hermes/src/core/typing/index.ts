@@ -1,5 +1,5 @@
 export { assertDate } from './assert.js'
 export { type Flavour, type WithFlavour, type WithoutFlavour } from './flavour.js'
 export { parseNonEmptyString, type NonEmptyString } from './NonEmptyString.js'
-export { assertNever } from './utils.js'
+export { assertNever, literalObject } from './utils.js'
 export { parseUuid4, type Uuid4String } from './Uuid4String.js'

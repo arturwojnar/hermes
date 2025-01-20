@@ -1,4 +1,4 @@
-import assert from 'assert'
+import { assert } from './utils/assert.js'
 
 export class CancellationPromise<T> extends Promise<T> {
   private _resolve: (value: T | PromiseLike<T>) => void

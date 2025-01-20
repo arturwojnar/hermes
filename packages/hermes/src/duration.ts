@@ -1,4 +1,4 @@
-import assert from 'assert'
+import { assert } from './utils/assert.js'
 
 export class Duration {
   private constructor(private _ms: number) {}
