@@ -53,7 +53,6 @@ const createPublishingQueue = <InsertResult>(
 
     try {
       await publish(oldest)
-      oldest.acknowledge()
       unqueueOldest()
       console.info(`Published ${oldest.transaction.lsn}`)
       return 'published'

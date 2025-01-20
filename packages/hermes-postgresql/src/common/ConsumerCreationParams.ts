@@ -1,3 +1,4 @@
+import { Duration } from '@arturwojnar/hermes'
 import { Options, PostgresType } from 'postgres'
 import { AsyncOrSync } from 'ts-essentials'
 import { HermesMessageEnvelope, NowFunction } from './types.js'
@@ -15,9 +16,9 @@ type ConsumerCreationParams<Message> = {
    */
   partitionKey?: string
   /**
-   * @defaultValue 1000
+   * @defaultValue Duration.ofSeconds(1)
    */
-  waitAfterFailedPublishMs?: number
+  waitAfterFailedPublish?: Duration
   /**
    * @defaultValue true
    */

@@ -1,9 +1,8 @@
-import { Duration, swallow } from '@arturwojnar/hermes'
-import assert from 'assert'
+import { assert, Duration, swallow } from '@arturwojnar/hermes'
+import { setTimeout } from 'node:timers/promises'
 import { JSONValue, Options, PostgresType, Sql } from 'postgres'
 import { PublicationName, SlotName } from '../common/consts.js'
 import { ConsumerCreationParams } from '../common/ConsumerCreationParams.js'
-import { Lsn } from '../common/lsn.js'
 import {
   HermesMessageEnvelope,
   HermesSql,
@@ -14,9 +13,10 @@ import {
   Stop,
 } from '../common/types.js'
 import { startLogicalReplication } from '../subscribeToReplicationSlot/logicalReplicationStream.js'
-import { LogicalReplicationState } from '../subscribeToReplicationSlot/types.js'
+import { LogicalReplicationState, Transaction } from '../subscribeToReplicationSlot/types.js'
 import { migrate } from './migrate.js'
-import { createPublishingQueue } from './publishingQueue.js'
+import { OutboxConsumerState, OutboxConsumerStore } from './OutboxConsumerState.js'
+import { createPublishingQueue, MessageToPublish } from './publishingQueue.js'
 
 export class OutboxConsumer<Message extends JSONValue> implements IOutboxConsumer<Message> {
   private _sql: HermesSql | null = null
@@ -24,6 +24,7 @@ export class OutboxConsumer<Message extends JSONValue> implements IOutboxConsume
   constructor(
     private readonly _params: ConsumerCreationParams<Message>,
     private readonly _createClient: (options: Options<Record<string, PostgresType>>) => HermesSql,
+    private _state?: OutboxConsumerState,
   ) {}
 
   getDbConnection() {
@@ -34,24 +35,32 @@ export class OutboxConsumer<Message extends JSONValue> implements IOutboxConsume
   async start(): Promise<Stop> {
     const { publish, getOptions, consumerName } = this._params
     const partitionKey = this._params.partitionKey || 'default'
-    const publishingQueue = createPublishingQueue<InsertResult>(async ({ transaction }) => {
+    const onPublish = async ({ transaction, acknowledge }: MessageToPublish<InsertResult>) => {
       await sql.begin(async (sql) => {
+        assert(this._state)
+
         const messages = transaction.results.map<HermesMessageEnvelope<Message>>((result) => ({
           position: result.position,
           messageId: result.messageId,
           messageType: result.messageType,
           lsn: transaction.lsn,
+          redeliveryCount: this._state?.redeliveryCount || 0,
           message: JSON.parse(result.payload) as Message,
         }))
 
         await publish(messages)
+        await this._state.moveFurther(transaction.lsn, sql)
 
-        await sql`
-          UPDATE "outboxConsumer"
-          SET "lastProcessedLsn"=${transaction.lsn}, "lastUpdatedAt"=NOW()
-          WHERE "consumerName"=${consumerName}
-        `
+        acknowledge()
       })
+    }
+    const onFailedPublish = async (tx: Transaction<InsertResult>) => {
+      assert(this._state)
+      await this._state.reportFailedDelivery(tx.lsn)
+    }
+    const publishingQueue = createPublishingQueue<InsertResult>(onPublish, {
+      onFailedPublish,
+      waitAfterFailedPublish: this._params.waitAfterFailedPublish || Duration.ofSeconds(1),
     })
     const sql = (this._sql = this._createClient({
       ...getOptions(),
@@ -69,6 +78,7 @@ export class OutboxConsumer<Message extends JSONValue> implements IOutboxConsume
         replication: 'database',
       },
       onclose: async () => {
+        console.log('1')
         // await dropReplicationSlot(sql, 'hermes_slot')
         // if (ended)
         //   return
@@ -79,25 +89,18 @@ export class OutboxConsumer<Message extends JSONValue> implements IOutboxConsume
       },
     })
 
+    if (!this._state) {
+      this._state = new OutboxConsumerState(new OutboxConsumerStore(sql, consumerName, partitionKey))
+    }
+
     await migrate(sql)
 
-    const restartLsnResults = await sql<
-      [{ restart_lsn: Lsn }]
-    >`SELECT * FROM pg_replication_slots WHERE slot_name = 'hermes_slot';`
-    const restartLsn = restartLsnResults?.[0]?.restart_lsn || '0/00000000'
+    await this._state.createOrLoad(partitionKey)
 
-    await sql`
-      INSERT INTO "outboxConsumer" ("consumerName", "partitionKey", "lastProcessedLsn") VALUES (${consumerName}, ${partitionKey}, ${restartLsn})
-      ON CONFLICT ("consumerName") DO NOTHING;
-    `
-    const [{ lastProcessedLsn }] = await sql`
-        SELECT "lastProcessedLsn" FROM "outboxConsumer"
-        WHERE "consumerName"=${consumerName} AND "partitionKey"=${partitionKey}
-      `
-    console.log(lastProcessedLsn)
+    console.log(this._state.lastProcessedLsn)
 
     const replicationState: LogicalReplicationState = {
-      lastProcessedLsn: lastProcessedLsn,
+      lastProcessedLsn: this._state.lastProcessedLsn,
       timestamp: new Date(),
       publication: PublicationName,
       slotName: SlotName,
@@ -115,27 +118,18 @@ export class OutboxConsumer<Message extends JSONValue> implements IOutboxConsume
       },
       onInsert: async (transaction, acknowledge) => {
         publishingQueue.queue({ transaction, acknowledge })
-        await publishingQueue.publishMessages()
-        // await sql.begin(async (sql) => {
-        //   const messages = transaction.results.map<HermesMessageEnvelope<Message>>((result) => ({
-        //     position: result.position,
-        //     messageId: result.messageId,
-        //     messageType: result.messageType,
-        //     lsn: transaction.lsn,
-        //     message: JSON.parse(result.payload) as Message,
-        //   }))
 
-        //   await publish(messages)
-        //   await sql`UPDATE "outboxConsumer" SET "lastProcessedLsn"=${transaction.lsn}, "lastUpdatedAt"=NOW() WHERE "consumerName"=${consumerName}`
-        // })
+        await publishingQueue.publishMessages()
       },
     })
 
-    // addDisposeOnSigterm(() => dropReplicationSlot(sql, 'hermes_slot'))
-
     return async () => {
-      await swallow(() => sql.end({ timeout: Duration.ofSeconds(5).ms }))
-      // await swallow(() => subscribeSql.end({ timeout: Duration.ofSeconds(5).ms }))
+      const timeout = Duration.ofSeconds(1).ms
+
+      await Promise.all([
+        swallow(() => this._sql?.end({ timeout })),
+        Promise.race([swallow(() => subscribeSql?.end({ timeout })), setTimeout(timeout)]),
+      ])
     }
   }
 

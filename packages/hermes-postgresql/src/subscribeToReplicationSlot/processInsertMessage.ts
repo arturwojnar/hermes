@@ -1,4 +1,4 @@
-import assert from 'assert'
+import { assert } from '@arturwojnar/hermes'
 import type { Offset } from '../common/offset.js'
 import { offset } from '../common/offset.js'
 import type { ColumnConfig, ColumnType, OnDataProcessingResult } from './types.js'
@@ -140,7 +140,6 @@ const processInsertMessage = <InsertResult>(columnConfig: ColumnConfig<keyof Ins
     return {
       topLevelType: TopLevelType.XLogData,
       messageType: MessageType.Insert,
-      transactionId: 0,
       result,
     }
   }

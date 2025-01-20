@@ -1,4 +1,5 @@
 // import { OutboxConsumersCollectionName, OutboxMessagesCollectionName } from '../src/consts.js'
+import { Duration } from '@arturwojnar/hermes'
 import { expect, jest, test } from '@jest/globals'
 import { setTimeout } from 'node:timers/promises'
 import { convertLsnToBigInt, Lsn } from '../src/common/lsn.js'
@@ -6,7 +7,6 @@ import { createOutboxConsumer } from '../src/index.js'
 import { MedicineAdded, MedicineEvent } from './events.js'
 import { getRestartLsn } from './getRestartLsn.js'
 import { postgres } from './postgresql.js'
-import { Duration } from '@arturwojnar/hermes'
 
 jest.setTimeout(Duration.ofMinutes(5).ms)
 
@@ -50,6 +50,9 @@ test('Sending one event works', async () => {
         lastProcessedLsn: initialLsn,
         createdAt: expect.any(Date),
         lastUpdatedAt: expect.any(Date),
+        failedNextLsn: null,
+        nextLsnRedeliveryCount: 0,
+        status: 'CREATED',
       },
     ])
 

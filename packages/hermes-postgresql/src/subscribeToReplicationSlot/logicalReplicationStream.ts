@@ -1,8 +1,9 @@
 /* -eslint-disable  @typescript-eslint/no-unused-vars  */
 
-import { noop } from '@arturwojnar/hermes'
+import { Duration, noop, swallow } from '@arturwojnar/hermes'
 import { pipe } from 'fp-ts/lib/function.js'
-import type { Error } from 'postgres'
+import { setTimeout } from 'node:timers/promises'
+import postgres, { type Error } from 'postgres'
 import { convertBigIntToLsn, incrementWAL } from '../common/lsn.js'
 import { HermesSql } from '../common/types.js'
 import { onData as _onData } from './onData.js'
@@ -24,6 +25,8 @@ export type LogicalReplicationParams<InsertResult> = {
   onInsert: OnInsert<InsertResult>
 }
 
+const PSQL_ADMIN_SHUTDOWN = '57P01'
+
 const startLogicalReplication = async <InsertResult>(params: LogicalReplicationParams<InsertResult>) => {
   const { state, sql } = params
   const onInsert = params.onInsert || noop
@@ -37,12 +40,10 @@ const startLogicalReplication = async <InsertResult>(params: LogicalReplicationP
   const curriedOnData = _onData(params.columnConfig)
   const onData = (message: Buffer) => curriedOnData(message)
   const acknowledgeLastLsn = sendStandbyStatusUpdate(stream, () => state.lastProcessedLsn)
-  const commitTransaction = sendStandbyStatusUpdate(stream, () => currentTransaction.lsn)
   const close = async () => {
-    if (stream) {
-      await new Promise((r) => (stream.once('close', r), stream.end()))
-    }
-    return sql.end()
+    const timeout = Duration.ofSeconds(1).ms
+
+    await Promise.all([Promise.race([swallow(() => sql.end({ timeout })), setTimeout(timeout)])])
   }
 
   const storeResult = (result: OnDataProcessingResult<InsertResult>) => {
@@ -66,23 +67,30 @@ const startLogicalReplication = async <InsertResult>(params: LogicalReplicationP
     if (result.topLevelType === TopLevelType.PrimaryKeepaliveMessage && result.shouldPong) {
       acknowledgeLastLsn()
     } else if (result.topLevelType === TopLevelType.XLogData && result.messageType === MessageType.Commit) {
-      const commitLsn = currentTransaction.lsn
-      const acknowledge = sendStandbyStatusUpdate(stream, () => commitLsn)
+      const acknowledge = () => {
+        sendStandbyStatusUpdate(stream, () => params.state.lastProcessedLsn)
+        state.lastProcessedLsn = currentTransaction.lsn
+        currentTransaction = emptyTransaction(state.lastProcessedLsn)
+      }
 
       onInsert(currentTransaction, acknowledge)
-
-      // commitTransaction()
-
-      state.lastProcessedLsn = currentTransaction.lsn
-      currentTransaction = emptyTransaction(state.lastProcessedLsn)
     }
   }
 
   stream.on('data', (message: Buffer) => {
     pipe(message, onData, storeResult, handleResult)
   })
-  stream.on('error', (error: Error) => {
-    console.error(error)
+  stream.on('error', async (error) => {
+    const pError = error as postgres.PostgresError
+    if (
+      (pError.code === PSQL_ADMIN_SHUTDOWN || pError.code === 'CONNECTION_CLOSED') &&
+      pError.query.includes('START_REPLICATION SLOT')
+    ) {
+      console.info('Replication connection closed due to database shutdown')
+      await swallow(() => sql.end({ timeout: Duration.ofSeconds(1).ms }))
+    } else {
+      console.error(error)
+    }
   })
   stream.on('close', () => {
     close().catch(noop)

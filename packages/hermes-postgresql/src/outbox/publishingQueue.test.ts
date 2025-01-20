@@ -72,9 +72,6 @@ describe('publishingQueue', () => {
     await publishMessages()
 
     expect(publishedMessages).toEqual(['0/1', '0/2', '0/3'])
-    expect(message1.acknowledge).toHaveBeenCalled()
-    expect(message2.acknowledge).toHaveBeenCalled()
-    expect(message3.acknowledge).toHaveBeenCalled()
 
     expect(size()).toBe(0)
   })
@@ -117,9 +114,6 @@ describe('publishingQueue', () => {
 
     // All messages should eventually be processed successfully
     expect(publishedMessages).toEqual(['0/1', '0/2', '0/3'])
-    expect(message1.acknowledge).toHaveBeenCalled()
-    expect(message2.acknowledge).toHaveBeenCalled()
-    expect(message3.acknowledge).toHaveBeenCalled()
   })
 
   it('should keep retrying failed message until success', async () => {
@@ -150,7 +144,6 @@ describe('publishingQueue', () => {
 
     expect(mockPublish).toHaveBeenCalledTimes(3)
     expect(mockFailedPublishCallback).toHaveBeenCalledTimes(2)
-    expect(message.acknowledge).toHaveBeenCalled()
     expect(publishedMessages).toEqual(['0/1'])
   })
 
@@ -184,11 +177,6 @@ describe('publishingQueue', () => {
 
     expect(mockPublish).toHaveBeenCalledTimes(6)
 
-    messages.forEach((msg) => {
-      expect(msg.acknowledge).toHaveBeenCalledTimes(1)
-    })
-
-    expect(laterMessage.acknowledge).toHaveBeenCalledTimes(1)
     expect(publishedMessages).toEqual(['0/1', '0/2', '0/3', '0/4', '0/5', '0/100'])
   })
 

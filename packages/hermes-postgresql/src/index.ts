@@ -14,7 +14,8 @@ const test = async () => {
         }
       },
       publish: (event) => {
-        return Promise.resolve()
+        // return Promise.resolve()
+        return Promise.reject(new Error())
       },
       consumerName: 'app',
     })

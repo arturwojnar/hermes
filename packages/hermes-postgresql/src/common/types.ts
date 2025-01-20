@@ -5,6 +5,7 @@ type HermesMessageEnvelope<Message> = {
   messageId: string
   messageType: string
   lsn: string
+  redeliveryCount: number
   message: Message
 }
 

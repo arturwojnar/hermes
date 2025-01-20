@@ -33,7 +33,7 @@ test('Sending many events at once in order works', async () => {
     const event3 = generateEvent('med3')
     const event4 = generateEvent('med4')
     const event5 = generateEvent('med5')
-    const event6 = generateEvent('med5')
+    const event6 = generateEvent('med6')
 
     const stop = await outbox.start()
     onDispose(stop)
@@ -50,8 +50,8 @@ test('Sending many events at once in order works', async () => {
         createdAt: expect.any(Date),
         lastUpdatedAt: expect.any(Date),
         failedNextLsn: null,
-        lastProcessedPosition: null,
         nextLsnRedeliveryCount: 0,
+        status: 'CREATED',
       },
     ])
 

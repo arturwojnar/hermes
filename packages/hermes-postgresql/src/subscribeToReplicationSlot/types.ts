@@ -48,7 +48,6 @@ type OnDataProcessingResult<InsertResult> =
   | {
       topLevelType: TopLevelType.XLogData
       messageType: MessageType.Insert
-      transactionId: number
       result: InsertResult
     }
   | {

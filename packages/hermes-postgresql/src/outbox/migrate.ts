@@ -1,5 +1,6 @@
 import { Sql } from 'postgres'
 import { PublicationName, SlotName } from '../common/consts.js'
+import { OutboxConsumerStatuses } from './OutboxConsumerState.js'
 
 export const dropReplicationSlot = async (sql: Sql, slotName = SlotName) => {
   await sql.unsafe(
@@ -22,6 +23,19 @@ export const migrate = async (sql: Sql) => {
       END IF;
     END $$;
   `
+  const [{ exists }] = await sql`
+    SELECT EXISTS (
+      SELECT 1 FROM pg_type t 
+      JOIN pg_catalog.pg_namespace n ON n.oid = t.typnamespace 
+      WHERE t.typname = 'ConsumerStatus'
+    )
+  `
+  if (!exists) {
+    const enumValues = OutboxConsumerStatuses.map((status) => `'${status}'`).join(', ')
+    await sql.unsafe(`
+    CREATE TYPE "ConsumerStatus" AS ENUM (${enumValues})
+  `)
+  }
 
   await sql`
     CREATE TABLE IF NOT EXISTS "outbox" (
@@ -39,15 +53,15 @@ export const migrate = async (sql: Sql) => {
 
   await sql`
     CREATE TABLE IF NOT EXISTS "outboxConsumer" (
-      "id"                      BIGSERIAL     PRIMARY KEY,
-      "consumerName"            VARCHAR(30)   NOT NULL,
-      "partitionKey"            VARCHAR(50)   DEFAULT 'default' NOT NULL,
-      "lastProcessedLsn"        VARCHAR(20)   DEFAULT '0/00000000' NOT NULL,
-      "lastProcessedPosition"   BIGINT        DEFAULT NULL,
-      "failedNextLsn"           VARCHAR(20)   DEFAULT NULL,
-      "nextLsnRedeliveryCount"  INTEGER       DEFAULT 0 NOT NULL,
-      "createdAt"               TIMESTAMPTZ   DEFAULT NOW() NOT NULL,
-      "lastUpdatedAt"           TIMESTAMPTZ   DEFAULT NOW() NULL
+      "id"                      BIGSERIAL         PRIMARY KEY,
+      "consumerName"            VARCHAR(30)       NOT NULL,
+      "partitionKey"            VARCHAR(50)       DEFAULT 'default' NOT NULL,
+      "status"                  "ConsumerStatus"  DEFAULT 'CREATED' NOT NULL,
+      "lastProcessedLsn"        VARCHAR(20)       DEFAULT '0/00000000' NOT NULL,
+      "failedNextLsn"           VARCHAR(20)       DEFAULT NULL,
+      "nextLsnRedeliveryCount"  INTEGER           DEFAULT 0 NOT NULL,
+      "createdAt"               TIMESTAMPTZ       DEFAULT NOW() NOT NULL,
+      "lastUpdatedAt"           TIMESTAMPTZ       DEFAULT NOW() NULL
     );
   `
 
