@@ -56,7 +56,7 @@ test('Sending one event works', async () => {
       },
     ])
 
-    await outbox.publish({
+    await outbox.queue({
       message: event,
       messageId: 'abc1',
       messageType: event.name,

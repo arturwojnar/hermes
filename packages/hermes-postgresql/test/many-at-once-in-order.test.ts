@@ -62,7 +62,7 @@ test('Sending many events at once in order works', async () => {
     }))
 
     for (const envelope of envelopes) {
-      await outbox.publish(envelope)
+      await outbox.queue(envelope)
     }
 
     await setTimeout(500)
@@ -139,7 +139,7 @@ test('Sending many events at once in order works', async () => {
     expect(convertLsnToBigInt(updatedLsn)).toBe(publishLSNs[publishLSNs.length - 1])
     expect(convertLsnToBigInt(updatedLsn)).toBeGreaterThan(convertLsnToBigInt(initialLsn))
 
-    await outbox.publish({
+    await outbox.queue({
       message: event6,
       messageId: `abc6`,
       messageType: event6.name,

@@ -133,10 +133,7 @@ export class OutboxConsumer<Message extends JSONValue> implements IOutboxConsume
     }
   }
 
-  async publish(
-    message: MessageEnvelope<Message> | MessageEnvelope<Message>[],
-    options?: PublishOptions,
-  ): Promise<void> {
+  async queue(message: MessageEnvelope<Message> | MessageEnvelope<Message>[], options?: PublishOptions): Promise<void> {
     assert(this._sql)
 
     const partitionKey = options?.partitionKey || 'default'

@@ -35,7 +35,7 @@ type Publish<Message> = (
 ) => Promise<void>
 type IOutboxConsumer<Message> = {
   start: Start
-  publish: Publish<Message>
+  queue: Publish<Message>
   getDbConnection(): Sql
 }
 type NowFunction = () => Date
