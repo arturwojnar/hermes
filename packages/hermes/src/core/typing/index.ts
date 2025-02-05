@@ -1,5 +1,6 @@
 export { assertDate } from './assert.js'
 export { type Flavour, type WithFlavour, type WithoutFlavour } from './flavour.js'
 export { parseNonEmptyString, type NonEmptyString } from './NonEmptyString.js'
+export { createSha256From, type EventId, type Sha256, type Sha256Of } from './Sha256Of.js'
 export { assertNever, literalObject } from './utils.js'
 export { parseUuid4, type Uuid4String } from './Uuid4String.js'
