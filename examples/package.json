@@ -2,7 +2,8 @@
   "name": "no-scaling",
   "version": "1.0.0",
   "description": "Example for no-scaling option",
-  "main": "./lib/index.cjs",
+  "main": "./dist/index.cjs",
+  "type": "module",
   "author": "",
   "license": "ISC",
   "scripts": {
@@ -10,7 +11,10 @@
   },
   "devDependencies": {
     "@types/amqplib": "~0.10.5",
+    "@types/cors": "~2.8.17",
+    "@types/http-status-codes": "~1.2.0",
     "@types/node": "~20.11.20",
+    "@types/validator": "~13.12.2",
     "@typescript-eslint/eslint-plugin": "~6.21.0",
     "eslint": "~8.57.0",
     "eslint-config-prettier": "~9.1.0",
@@ -25,16 +29,31 @@
     "npm-check-updates": "~16.14.18",
     "prettier": "~3.2.5",
     "prettier-eslint": "~16.3.0",
+    "ts-essentials": "~10.0.4",
     "ts-node": "~10.9.2",
     "tsconfig-paths": "~4.2.0",
     "typescript": "~5.3.3",
     "typescript-transform-paths": "~3.4.7"
   },
   "dependencies": {
-    "@arturwojnar/hermes": "~1.0.0-alpha.3",
-    "@arturwojnar/hermes-mongodb": "~1.0.0-alpha.3",
+    "@arturwojnar/hermes": "~1.0.0-alpha.7",
+    "@arturwojnar/hermes-mongodb": "~1.0.0-alpha.7",
+    "@arturwojnar/hermes-postgresql": "~1.0.0-alpha.7",
+    "@event-driven-io/emmett": "~0.23.0",
+    "@types/express": "~5.0.0",
     "amqplib": "~0.10.3",
+    "cors": "~2.8.5",
+    "express": "~4.21.2",
+    "helmet": "~8.0.0",
+    "http-status-codes": "~2.3.0",
     "mongodb": "~6.4.0",
-    "pulsar-client": "~1.10.0"
-  }
+    "postgres": "~3.4.5",
+    "pulsar-client": "~1.10.0",
+    "validator": "~13.12.0"
+  },
+  "workspaces": [
+    "../packages/hermes",
+    "../packages/hermes-mongodb",
+    "../packages/hermes-postgresql"
+  ]
 }
