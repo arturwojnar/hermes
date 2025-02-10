@@ -48,6 +48,8 @@ const test = async () => {
 //   swallow(stop)
 // })
 
+export { AsyncOutboxConsumer, createAsyncOutboxConsumer } from './asyncOutbox/AsyncOutboxConsumer.js'
 export { type HermesMessageEnvelope, type MessageEnvelope } from './common/types.js'
 export { createOutboxConsumer } from './outbox/createOutboxConsumer.js'
 export { OutboxConsumer } from './outbox/OutboxConsumer.js'
+export { useBasicAsyncOutboxConsumerPolicy, type UseAsyncOutboxPolicy } from './policies/useBasicAsyncStoragePolicy.js'

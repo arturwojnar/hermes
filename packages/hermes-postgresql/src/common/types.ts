@@ -1,6 +1,8 @@
-import { Sql, TransactionSql } from 'postgres'
+import { JSONValue, Sql, TransactionSql } from 'postgres'
+import { DeepReadonly } from 'ts-essentials'
+import { ConsumerCreationParams } from './ConsumerCreationParams.js'
 
-type HermesMessageEnvelope<Message> = {
+type HermesMessageEnvelope<Message extends JSONValue> = {
   position: number | bigint
   messageId: string
   messageType: string
@@ -9,7 +11,7 @@ type HermesMessageEnvelope<Message> = {
   message: Message
 }
 
-type MessageEnvelope<Message> = {
+type MessageEnvelope<Message extends JSONValue> = {
   messageId: string
   messageType: string
   message: Message
@@ -29,14 +31,16 @@ type PublishOptions = {
   partitionKey?: string
   tx?: TransactionSql
 }
-type Publish<Message> = (
+type Publish<Message extends JSONValue> = (
   message: MessageEnvelope<Message> | MessageEnvelope<Message>[],
   options?: PublishOptions,
 ) => Promise<void>
-type IOutboxConsumer<Message> = {
+type IOutboxConsumer<Message extends JSONValue> = {
   start: Start
   queue: Publish<Message>
+  send: (message: MessageEnvelope<Message> | MessageEnvelope<Message>[], tx?: TransactionSql) => Promise<void>
   getDbConnection(): Sql
+  getCreationParams(): DeepReadonly<ConsumerCreationParams<Message>>
 }
 type NowFunction = () => Date
 type ErrorCallback = (error: unknown) => void

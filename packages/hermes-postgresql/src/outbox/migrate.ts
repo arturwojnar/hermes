@@ -52,6 +52,24 @@ export const migrate = async (sql: Sql) => {
   `
 
   await sql`
+    CREATE TABLE IF NOT EXISTS "asyncOutbox" (
+      "position"      BIGSERIAL     PRIMARY KEY,
+      "consumerName"  VARCHAR(30)   NOT NULL,
+      "messageId"     VARCHAR(250)  NOT NULL,
+      "messageType"   VARCHAR(250)  NOT NULL,
+      "data"          JSONB         NOT NULL,
+      "addedAt"       TIMESTAMPTZ   DEFAULT NOW() NOT NULL,
+      "createdAt"     TIMESTAMPTZ   DEFAULT NOW() NOT NULL,
+      "failsCount"    INTEGER       DEFAULT 0,
+      "sentAt"        TIMESTAMPTZ   NULL,
+      "delivered"     BOOLEAN       DEFAULT FALSE
+    );
+  `
+
+  await sql`CREATE INDEX IF NOT EXISTS "asyncOutboxDeliveredIdx" ON "asyncOutbox" ("delivered" ASC);`
+  await sql`CREATE INDEX IF NOT EXISTS "asyncOutboxDeliveredWithDateIdx" ON "asyncOutbox" ("delivered" ASC, "addedAt" ASC);`
+
+  await sql`
     CREATE TABLE IF NOT EXISTS "outboxConsumer" (
       "id"                      BIGSERIAL         PRIMARY KEY,
       "consumerName"            VARCHAR(30)       NOT NULL,

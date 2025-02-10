@@ -1,9 +1,10 @@
 import { Duration } from '@arturwojnar/hermes'
-import { Options, PostgresType } from 'postgres'
+import { JSONValue, Options, PostgresType } from 'postgres'
 import { AsyncOrSync } from 'ts-essentials'
+import { UseAsyncOutboxPolicy } from '../policies/useBasicAsyncStoragePolicy.js'
 import { HermesMessageEnvelope, NowFunction } from './types.js'
 
-type ConsumerCreationParams<Message> = {
+type ConsumerCreationParams<Message extends JSONValue> = {
   getOptions: () => Options<Record<string, PostgresType>>
   // db: Db
   publish: (message: HermesMessageEnvelope<Message> | HermesMessageEnvelope<Message>[]) => AsyncOrSync<void> | never
@@ -41,6 +42,10 @@ type ConsumerCreationParams<Message> = {
    * @defaultValue `() => new Date()`
    */
   now?: NowFunction
+  /**
+   * If you want to use a separate async outbox, pass a policy that creates it.
+   */
+  asyncOutbox?: UseAsyncOutboxPolicy<Message>
 }
 
 export type { ConsumerCreationParams }

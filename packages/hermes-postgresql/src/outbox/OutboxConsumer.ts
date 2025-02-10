@@ -1,6 +1,6 @@
 import { assert, Duration, swallow } from '@arturwojnar/hermes'
 import { setTimeout } from 'node:timers/promises'
-import { JSONValue, Options, PostgresType, Sql } from 'postgres'
+import { JSONValue, Options, PostgresType, Sql, TransactionSql } from 'postgres'
 import { PublicationName, SlotName } from '../common/consts.js'
 import { ConsumerCreationParams } from '../common/ConsumerCreationParams.js'
 import {
@@ -20,12 +20,19 @@ import { createPublishingQueue, MessageToPublish } from './publishingQueue.js'
 
 export class OutboxConsumer<Message extends JSONValue> implements IOutboxConsumer<Message> {
   private _sql: HermesSql | null = null
+  private _sendAsync:
+    | ((message: MessageEnvelope<Message> | MessageEnvelope<Message>[], tx?: TransactionSql) => Promise<void>)
+    | null = null
 
   constructor(
     private readonly _params: ConsumerCreationParams<Message>,
     private readonly _createClient: (options: Options<Record<string, PostgresType>>) => HermesSql,
     private _state?: OutboxConsumerState,
   ) {}
+
+  getCreationParams() {
+    return this._params
+  }
 
   getDbConnection() {
     assert(this._sql, `A connection hasn't been yet established.`)
@@ -97,8 +104,6 @@ export class OutboxConsumer<Message extends JSONValue> implements IOutboxConsume
 
     await this._state.createOrLoad(partitionKey)
 
-    console.log(this._state.lastProcessedLsn)
-
     const replicationState: LogicalReplicationState = {
       lastProcessedLsn: this._state.lastProcessedLsn,
       timestamp: new Date(),
@@ -123,12 +128,24 @@ export class OutboxConsumer<Message extends JSONValue> implements IOutboxConsume
       },
     })
 
+    let asyncOutboxStop: Stop | undefined
+
+    if (this._params.asyncOutbox) {
+      const asyncOutbox = this._params.asyncOutbox(this)
+      asyncOutboxStop = asyncOutbox.start()
+
+      this._sendAsync = async (message, tx) => {
+        await asyncOutbox.send(message, { tx })
+      }
+    }
+
     return async () => {
       const timeout = Duration.ofSeconds(1).ms
 
       await Promise.all([
         swallow(() => this._sql?.end({ timeout })),
         Promise.race([swallow(() => subscribeSql?.end({ timeout })), setTimeout(timeout)]),
+        swallow(() => (asyncOutboxStop ? asyncOutboxStop() : Promise.resolve())),
       ])
     }
   }
@@ -154,6 +171,14 @@ export class OutboxConsumer<Message extends JSONValue> implements IOutboxConsume
     } else {
       await this._publishOne(sql, message, partitionKey)
     }
+  }
+
+  async send(message: MessageEnvelope<Message> | MessageEnvelope<Message>[], tx?: TransactionSql) {
+    if (this._sendAsync === null) {
+      throw new Error(`AsyncOutbox hasn't been initialized.`)
+    }
+
+    return await this._sendAsync(message, tx)
   }
 
   private async _publishOne(sql: Sql, message: MessageEnvelope<Message>, partitionKey = 'default') {
