@@ -3,7 +3,7 @@
 import { Duration, noop, swallow } from '@arturwojnar/hermes'
 import { pipe } from 'fp-ts/lib/function.js'
 import { setTimeout } from 'node:timers/promises'
-import postgres, { type Error } from 'postgres'
+import postgres from 'postgres'
 import { convertBigIntToLsn, incrementWAL } from '../common/lsn.js'
 import { HermesSql } from '../common/types.js'
 import { onData as _onData } from './onData.js'
@@ -48,16 +48,11 @@ const startLogicalReplication = async <InsertResult>(params: LogicalReplicationP
 
   const storeResult = (result: OnDataProcessingResult<InsertResult>) => {
     if (result.messageType === MessageType.Begin) {
-      console.info(`[store] BEGIN ${result.transactionId} / ${result.lsn}`)
       currentTransaction = createTransaction<InsertResult>(result.transactionId, result.lsn, result.timestamp)
     } else if (result.messageType === MessageType.Insert) {
-      // currentTransaction.results = [...currentTransaction.results, result.result]
-      console.info(`[store] INSERT ${JSON.stringify(result.result)}`)
       addInsert(currentTransaction, result.result)
     } else if (result.messageType === MessageType.Commit) {
-      console.info(`[store] COMMIT ${result.commitLsn}`)
-      // currentTransaction.lsn = result.transactionEndLsn
-      // console.log('storeResult - Commit')
+      // console.info(`[store] COMMIT ${result.commitLsn}`)
     }
 
     return result
@@ -80,8 +75,10 @@ const startLogicalReplication = async <InsertResult>(params: LogicalReplicationP
   stream.on('data', (message: Buffer) => {
     pipe(message, onData, storeResult, handleResult)
   })
+
   stream.on('error', async (error) => {
     const pError = error as postgres.PostgresError
+
     if (
       (pError.code === PSQL_ADMIN_SHUTDOWN || pError.code === 'CONNECTION_CLOSED') &&
       pError.query.includes('START_REPLICATION SLOT')
@@ -89,16 +86,13 @@ const startLogicalReplication = async <InsertResult>(params: LogicalReplicationP
       console.info('Replication connection closed due to database shutdown')
       await swallow(() => sql.end({ timeout: Duration.ofSeconds(1).ms }))
     } else {
-      console.error(error)
+      console.error(error, 'startLogicalReplication')
     }
   })
+
   stream.on('close', () => {
     close().catch(noop)
   })
-}
-
-const onError = (error: Error) => {
-  console.error(error)
 }
 
 export { LogicalReplicationState, startLogicalReplication }

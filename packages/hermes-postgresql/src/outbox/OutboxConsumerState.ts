@@ -1,7 +1,7 @@
 import { assert, literalObject } from '@arturwojnar/hermes'
 import { TransactionSql } from 'postgres'
 import { Prettify } from 'ts-essentials'
-import { Lsn, toLsn } from '../common/lsn.js'
+import { convertLsnToBigInt, Lsn, toLsn } from '../common/lsn.js'
 import { HermesSql } from '../common/types.js'
 
 type BaseOutboxConsumerModel = {
@@ -206,6 +206,11 @@ class OutboxConsumerState {
     assert(consumer)
 
     if (consumer.status === 'DELETED' || consumer.status === 'INITIAL') {
+      return
+    }
+
+    if (convertLsnToBigInt(lastProcessedLsn) <= convertLsnToBigInt(this._store.lastProcessedLsn)) {
+      console.error('outbox state invalid op')
       return
     }
 

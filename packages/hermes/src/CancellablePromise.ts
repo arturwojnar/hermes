@@ -1,6 +1,6 @@
 import { assert } from './utils/assert.js'
 
-export class CancellationPromise<T> extends Promise<T> {
+export class CancellationPromise<T = unknown> extends Promise<T> {
   private _resolve: (value: T | PromiseLike<T>) => void
   private _reject: (reason?: any) => void
   private _state: 'resolved' | 'rejected' | 'pending' = 'pending'
@@ -29,9 +29,9 @@ export class CancellationPromise<T> extends Promise<T> {
     this._reject(reason)
   }
 
-  resolve(value: T): void {
+  resolve(value?: T): void {
     this._state = 'resolved'
-    this._resolve(value)
+    this._resolve(value as T)
   }
 
   get isResolved() {
@@ -46,13 +46,13 @@ export class CancellationPromise<T> extends Promise<T> {
     return this._state === 'pending'
   }
 
-  static resolved<R = undefined>(value: R) {
+  static resolved<R = unknown>(value?: R) {
     const promise = new CancellationPromise<R>()
-    promise.resolve(value)
+    promise.resolve(value as R)
     return promise
   }
 
-  static rejected<R = undefined>(value: R) {
+  static rejected<R = unknown>(value?: R) {
     const promise = new CancellationPromise<R>()
     promise.reject(value)
     return promise

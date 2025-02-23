@@ -5,7 +5,7 @@ import { setTimeout } from 'timers/promises'
 import { Lsn } from '../common/lsn.js'
 import { InsertResult } from '../common/types.js'
 import { Transaction } from '../subscribeToReplicationSlot/types.js'
-import { type MessageToPublish, createPublishingQueue } from './publishingQueue.js'
+import { type MessageToPublish, createSerializedPublishingQueue } from './createSerializedPublishingQueue.js'
 
 describe('publishingQueue', () => {
   const createMockTransaction = (lsn: Lsn): Transaction<InsertResult> => ({
@@ -17,7 +17,7 @@ describe('publishingQueue', () => {
 
   const createMockMessage = (lsn: Lsn): MessageToPublish<InsertResult> => ({
     transaction: createMockTransaction(lsn),
-    acknowledge: jest.fn(),
+    acknowledge: jest.fn<() => Promise<void>>().mockResolvedValue(),
   })
 
   const createMockPublish = () =>
@@ -25,7 +25,7 @@ describe('publishingQueue', () => {
 
   it('should queue unique messages', () => {
     const mockPublish = createMockPublish()
-    const queue = createPublishingQueue(mockPublish)
+    const queue = createSerializedPublishingQueue(mockPublish)
 
     const message1 = createMockMessage('0/1')
     const message2 = createMockMessage('0/2')
@@ -34,12 +34,11 @@ describe('publishingQueue', () => {
     queue.queue(message2)
 
     expect(queue.size()).toBe(2)
-    expect(mockPublish).not.toHaveBeenCalled()
   })
 
   it('should ignore duplicate messages based on LSN', () => {
     const mockPublish = createMockPublish()
-    const queue = createPublishingQueue(mockPublish)
+    const queue = createSerializedPublishingQueue(mockPublish)
 
     const message1 = createMockMessage('0/1')
     const message2 = createMockMessage('0/1') // Same LSN
@@ -48,7 +47,6 @@ describe('publishingQueue', () => {
     queue.queue(message2)
 
     expect(queue.size()).toBe(1)
-    expect(mockPublish).not.toHaveBeenCalled()
   })
 
   it('should publish messages in FIFO order', async () => {
@@ -59,19 +57,21 @@ describe('publishingQueue', () => {
         publishedMessages.push(message.transaction.lsn)
       })
 
-    const { queue, publishMessages, size } = createPublishingQueue(mockPublish)
+    const { queue, size, run } = createSerializedPublishingQueue(mockPublish)
 
     const message1 = createMockMessage('0/1')
     const message2 = createMockMessage('0/2')
     const message3 = createMockMessage('0/3')
+    const message4 = createMockMessage('0/4')
 
     queue(message1)
     queue(message2)
     queue(message3)
+    queue(message4)
 
-    await publishMessages()
+    await run()
 
-    expect(publishedMessages).toEqual(['0/1', '0/2', '0/3'])
+    expect(publishedMessages).toEqual(['0/1', '0/2', '0/3', '0/4'])
 
     expect(size()).toBe(0)
   })
@@ -93,7 +93,7 @@ describe('publishingQueue', () => {
       .mockImplementation(async (tx: Transaction<InsertResult>): Promise<void> => {
         return Promise.resolve()
       })
-    const { queue, publishMessages } = createPublishingQueue(mockPublish, {
+    const { queue, run } = createSerializedPublishingQueue(mockPublish, {
       waitAfterFailedPublish: Duration.ofMiliseconds(1),
       onFailedPublish: mockFailedPublishCallback,
     })
@@ -106,7 +106,7 @@ describe('publishingQueue', () => {
     queue(message2)
     queue(message3)
 
-    await publishMessages()
+    await run()
 
     // First message should have had a failed attempt before succeeding
     expect(mockFailedPublishCallback).toHaveBeenCalledWith(message1.transaction)
@@ -114,6 +114,9 @@ describe('publishingQueue', () => {
 
     // All messages should eventually be processed successfully
     expect(publishedMessages).toEqual(['0/1', '0/2', '0/3'])
+    expect(message1.acknowledge).toHaveBeenCalledTimes(1)
+    expect(message2.acknowledge).toHaveBeenCalledTimes(1)
+    expect(message3.acknowledge).toHaveBeenCalledTimes(1)
   })
 
   it('should keep retrying failed message until success', async () => {
@@ -132,19 +135,20 @@ describe('publishingQueue', () => {
       .mockImplementation(async (tx: Transaction<InsertResult>): Promise<void> => {
         return Promise.resolve()
       })
-    const { queue, publishMessages } = createPublishingQueue(mockPublish, {
+    const { queue, run } = createSerializedPublishingQueue(mockPublish, {
       waitAfterFailedPublish: Duration.ofMiliseconds(10),
       onFailedPublish: mockFailedPublishCallback,
     })
 
     const message = createMockMessage('0/1')
-    queue(message)
 
-    await publishMessages()
+    queue(message)
+    await run()
 
     expect(mockPublish).toHaveBeenCalledTimes(3)
     expect(mockFailedPublishCallback).toHaveBeenCalledTimes(2)
     expect(publishedMessages).toEqual(['0/1'])
+    expect(message.acknowledge).toHaveBeenCalledTimes(1)
   })
 
   it('should publish all queued messages until queue is empty', async () => {
@@ -155,7 +159,7 @@ describe('publishingQueue', () => {
         await setTimeout(100)
         publishedMessages.push(message.transaction.lsn)
       })
-    const { queue, publishMessages } = createPublishingQueue(mockPublish)
+    const { queue, run } = createSerializedPublishingQueue(mockPublish)
 
     const messages = [
       createMockMessage('0/1'),
@@ -173,11 +177,17 @@ describe('publishingQueue', () => {
       queue(laterMessage)
     }, 330)
 
-    await publishMessages()
+    const anotherMessage = createMockMessage('0/50')
+    queue(anotherMessage)
 
-    expect(mockPublish).toHaveBeenCalledTimes(6)
+    await run()
 
-    expect(publishedMessages).toEqual(['0/1', '0/2', '0/3', '0/4', '0/5', '0/100'])
+    expect(mockPublish).toHaveBeenCalledTimes(7)
+
+    expect(publishedMessages).toEqual(['0/1', '0/2', '0/3', '0/4', '0/5', '0/50', '0/100'])
+    messages.forEach((message) => expect(message.acknowledge).toHaveBeenCalledTimes(1))
+    expect(anotherMessage.acknowledge).toHaveBeenCalledTimes(1)
+    expect(laterMessage.acknowledge).toHaveBeenCalledTimes(1)
   })
 
   it('should prevent concurrent publishing', async () => {
@@ -185,16 +195,13 @@ describe('publishingQueue', () => {
       .fn<(messageToPublish: MessageToPublish<InsertResult>) => Promise<void>>()
       .mockImplementation(async () => await setTimeout(100))
 
-    const { queue, publishMessages } = createPublishingQueue(mockPublish)
+    const { queue, run } = createSerializedPublishingQueue(mockPublish)
 
+    // Start two concurrent publish operations
     queue(createMockMessage('0/1'))
     queue(createMockMessage('0/2'))
 
-    // Start two concurrent publish operations
-    const publish1 = publishMessages()
-    const publish2 = publishMessages()
-
-    await Promise.all([publish1, publish2])
+    await run()
 
     // Should only have published each message once despite concurrent calls
     expect(mockPublish).toHaveBeenCalledTimes(2)

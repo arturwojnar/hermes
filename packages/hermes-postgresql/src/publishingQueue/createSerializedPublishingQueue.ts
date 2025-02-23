@@ -1,12 +1,9 @@
-import { assertNever, Duration } from '@arturwojnar/hermes'
+import { assertNever, CancellationPromise, Duration } from '@arturwojnar/hermes'
 import { setTimeout } from 'node:timers/promises'
 import { Lsn } from '../common/lsn.js'
 import { Transaction } from '../subscribeToReplicationSlot/types.js'
-
-type MessageToPublish<InsertResult> = {
-  transaction: Transaction<InsertResult>
-  acknowledge: () => void
-}
+import { MessageToPublish } from './createNonBlockingPublishingQueue.js'
+import { PublishingQueue } from './publishingQueue.js'
 
 type PublishingQueueOptions<InsertResult> = {
   waitAfterFailedPublish?: Duration
@@ -15,27 +12,30 @@ type PublishingQueueOptions<InsertResult> = {
 
 type PublishResult = 'published' | 'failed' | 'exhausted'
 
-const createPublishingQueue = <InsertResult>(
+const createSerializedPublishingQueue = <InsertResult>(
   publish: (messageToPublish: MessageToPublish<InsertResult>) => Promise<void>,
   options?: PublishingQueueOptions<InsertResult>,
-) => {
+): PublishingQueue<'SerializedPublishingQueue', InsertResult> => {
   const waitAfterFailedPublish = options?.waitAfterFailedPublish || Duration.ofSeconds(1)
   const onFailedPublish = options?.onFailedPublish || (() => Promise.resolve())
   const ids = new Set<Lsn>()
   // LIFO
   const messages = new Array<MessageToPublish<InsertResult>>()
   let isPublishing = false
+  let publishingPromise = CancellationPromise.resolved()
 
   const queue = (messageToPublish: MessageToPublish<InsertResult>) => {
     if (ids.has(messageToPublish.transaction.lsn)) {
-      return
+      return messageToPublish
     }
 
     ids.add(messageToPublish.transaction.lsn)
     messages.push(messageToPublish)
+
+    return messageToPublish
   }
 
-  const unqueueOldest = () => {
+  const dequeueOldest = () => {
     if (messages.length === 0) {
       return
     }
@@ -44,33 +44,17 @@ const createPublishingQueue = <InsertResult>(
     ids.delete(oldest.transaction.lsn)
   }
 
-  const publishOldestMessage = async (): Promise<PublishResult> => {
-    if (messages.length === 0) {
-      return 'exhausted'
-    }
-
-    const oldest = messages[0]
-
-    try {
-      await publish(oldest)
-      unqueueOldest()
-      console.info(`Published ${oldest.transaction.lsn}`)
-      return 'published'
-    } catch (error) {
-      return 'failed'
-    }
-  }
-
-  const publishMessages = async () => {
+  const run = async () => {
     if (isPublishing) {
       return
     }
 
     isPublishing = true
+    publishingPromise = new CancellationPromise()
 
     try {
       do {
-        const result = await publishOldestMessage()
+        const result = await _publishOldestMessage()
 
         switch (result) {
           case 'published':
@@ -85,6 +69,7 @@ const createPublishingQueue = <InsertResult>(
             break
           case 'exhausted':
             isPublishing = false
+            publishingPromise.resolve()
             break
           default:
             assertNever(result)
@@ -92,16 +77,40 @@ const createPublishingQueue = <InsertResult>(
       } while (isPublishing)
     } finally {
       isPublishing = false
+      publishingPromise.resolve()
     }
   }
 
-  const size = () => messages.length
+  const _publishOldestMessage = async (): Promise<PublishResult> => {
+    if (messages.length === 0) {
+      return 'exhausted'
+    }
+
+    const oldest = messages[0]
+
+    try {
+      await publish(oldest)
+      dequeueOldest()
+      await oldest.acknowledge()
+
+      return 'published'
+    } catch (error) {
+      if (messages.length && messages[0].transaction.lsn !== oldest.transaction.lsn) {
+        // the message has been dequeued.
+        ids.add(oldest.transaction.lsn)
+        messages.unshift(oldest)
+      }
+      return 'failed'
+    }
+  }
 
   return {
+    name: () => 'SerializedPublishingQueue',
     queue,
-    publishMessages,
-    size,
+    run,
+    size: () => messages.length,
+    waitUntilIsEmpty: () => publishingPromise,
   }
 }
 
-export { createPublishingQueue, type MessageToPublish }
+export { createSerializedPublishingQueue, type MessageToPublish }

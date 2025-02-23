@@ -12,11 +12,16 @@ import {
   PublishOptions,
   Stop,
 } from '../common/types.js'
+import { createNonBlockingPublishingQueue } from '../publishingQueue/createNonBlockingPublishingQueue.js'
+import {
+  createSerializedPublishingQueue,
+  MessageToPublish,
+} from '../publishingQueue/createSerializedPublishingQueue.js'
 import { startLogicalReplication } from '../subscribeToReplicationSlot/logicalReplicationStream.js'
 import { LogicalReplicationState, Transaction } from '../subscribeToReplicationSlot/types.js'
+import { killReplicationProcesses } from './killBackendReplicationProcesses.js'
 import { migrate } from './migrate.js'
 import { OutboxConsumerState, OutboxConsumerStore } from './OutboxConsumerState.js'
-import { createPublishingQueue, MessageToPublish } from './publishingQueue.js'
 
 export class OutboxConsumer<Message extends JSONValue> implements IOutboxConsumer<Message> {
   private _sql: HermesSql | null = null
@@ -43,28 +48,26 @@ export class OutboxConsumer<Message extends JSONValue> implements IOutboxConsume
     const { publish, getOptions, consumerName } = this._params
     const partitionKey = this._params.partitionKey || 'default'
     const onPublish = async ({ transaction, acknowledge }: MessageToPublish<InsertResult>) => {
-      await sql.begin(async (sql) => {
-        assert(this._state)
+      assert(this._state)
 
-        const messages = transaction.results.map<HermesMessageEnvelope<Message>>((result) => ({
-          position: result.position,
-          messageId: result.messageId,
-          messageType: result.messageType,
-          lsn: transaction.lsn,
-          redeliveryCount: this._state?.redeliveryCount || 0,
-          message: JSON.parse(result.payload) as Message,
-        }))
+      const messages = transaction.results.map<HermesMessageEnvelope<Message>>((result) => ({
+        position: result.position,
+        messageId: result.messageId,
+        messageType: result.messageType,
+        lsn: transaction.lsn,
+        redeliveryCount: this._state?.redeliveryCount || 0,
+        message: JSON.parse(result.payload) as Message,
+      }))
 
-        await publish(messages)
-        await this._state.moveFurther(transaction.lsn, sql)
-
-        acknowledge()
-      })
+      await publish(messages)
     }
     const onFailedPublish = async (tx: Transaction<InsertResult>) => {
       assert(this._state)
       await this._state.reportFailedDelivery(tx.lsn)
     }
+    const createPublishingQueue = this._params.serialization
+      ? createSerializedPublishingQueue
+      : createNonBlockingPublishingQueue
     const publishingQueue = createPublishingQueue<InsertResult>(onPublish, {
       onFailedPublish,
       waitAfterFailedPublish: this._params.waitAfterFailedPublish || Duration.ofSeconds(1),
@@ -85,7 +88,6 @@ export class OutboxConsumer<Message extends JSONValue> implements IOutboxConsume
         replication: 'database',
       },
       onclose: async () => {
-        console.log('1')
         // await dropReplicationSlot(sql, 'hermes_slot')
         // if (ended)
         //   return
@@ -122,9 +124,19 @@ export class OutboxConsumer<Message extends JSONValue> implements IOutboxConsume
         payload: 'jsonb',
       },
       onInsert: async (transaction, acknowledge) => {
-        publishingQueue.queue({ transaction, acknowledge })
-
-        await publishingQueue.publishMessages()
+        const message = {
+          transaction,
+          acknowledge: async () => {
+            assert(this._state)
+            acknowledge()
+            await this._state.moveFurther(transaction.lsn)
+          },
+        }
+        publishingQueue.queue(message)
+        await publishingQueue.run(message)
+        // await sql.begin(async (sql) => {
+        //   await publishingQueue.run(message)
+        // })
       },
     })
 
@@ -142,11 +154,15 @@ export class OutboxConsumer<Message extends JSONValue> implements IOutboxConsume
     return async () => {
       const timeout = Duration.ofSeconds(1).ms
 
+      await swallow(() => killReplicationProcesses(this._sql!))
       await Promise.all([
         swallow(() => this._sql?.end({ timeout })),
+
         Promise.race([swallow(() => subscribeSql?.end({ timeout })), setTimeout(timeout)]),
         swallow(() => (asyncOutboxStop ? asyncOutboxStop() : Promise.resolve())),
       ])
+
+      this._state = undefined
     }
   }
 

@@ -2,6 +2,7 @@ import { Duration } from '@arturwojnar/hermes'
 import { JSONValue, Options, PostgresType } from 'postgres'
 import { AsyncOrSync } from 'ts-essentials'
 import { UseAsyncOutboxPolicy } from '../policies/useBasicAsyncStoragePolicy.js'
+import { PublishingQueue } from '../publishingQueue/publishingQueue.js'
 import { HermesMessageEnvelope, NowFunction } from './types.js'
 
 type ConsumerCreationParams<Message extends JSONValue> = {
@@ -30,6 +31,22 @@ type ConsumerCreationParams<Message extends JSONValue> = {
    * @defaultValue false
    */
   saveTimestamps?: boolean
+
+  /**
+   * A component responsible for publishing and acknowleding messages.
+   *
+   * @default
+   * @type {?PublishingQueue<'NonBlockingPublishingQueue'>}
+   */
+  // publishingQueue?: PublishingQueue<PublishingQueueType>
+
+  /**
+   * TODO
+   *
+   * @default false
+   * @type {?boolean}
+   */
+  serialization?: boolean
   /**
    * @defaultValue `noop`
    */
