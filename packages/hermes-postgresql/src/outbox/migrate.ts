@@ -1,8 +1,8 @@
 import { Sql } from 'postgres'
-import { PublicationName, SlotName } from '../common/consts.js'
+import { PublicationName, type SlotName } from '../common/consts.js'
 import { OutboxConsumerStatuses } from './OutboxConsumerState.js'
 
-export const dropReplicationSlot = async (sql: Sql, slotName = SlotName) => {
+export const dropReplicationSlot = async (sql: Sql, slotName: SlotName) => {
   await sql.unsafe(
     `
     SELECT pg_drop_replication_slot(slot_name)
@@ -14,7 +14,7 @@ export const dropReplicationSlot = async (sql: Sql, slotName = SlotName) => {
   )
 }
 
-export const migrate = async (sql: Sql) => {
+export const migrate = async (sql: Sql, slotName: string) => {
   await sql`
     DO $$
     BEGIN
@@ -42,7 +42,7 @@ export const migrate = async (sql: Sql) => {
       "position"      BIGSERIAL     PRIMARY KEY,
       "messageId"     VARCHAR(250)  NOT NULL,
       "messageType"   VARCHAR(250)  NOT NULL,
-      "partitionKey"  VARCHAR(50)   DEFAULT 'default' NOT NULL,
+      "partitionKey"  VARCHAR(30)   DEFAULT 'default' NOT NULL,
       "data"          JSONB         NOT NULL,
       "addedAt"       TIMESTAMPTZ   DEFAULT NOW() NOT NULL,
       "createdAt"     TIMESTAMPTZ   DEFAULT NOW() NOT NULL,
@@ -73,7 +73,7 @@ export const migrate = async (sql: Sql) => {
     CREATE TABLE IF NOT EXISTS "outboxConsumer" (
       "id"                      BIGSERIAL         PRIMARY KEY,
       "consumerName"            VARCHAR(30)       NOT NULL,
-      "partitionKey"            VARCHAR(50)       DEFAULT 'default' NOT NULL,
+      "partitionKey"            VARCHAR(30)       DEFAULT 'default' NOT NULL,
       "status"                  "ConsumerStatus"  DEFAULT 'CREATED' NOT NULL,
       "lastProcessedLsn"        VARCHAR(20)       DEFAULT '0/00000000' NOT NULL,
       "failedNextLsn"           VARCHAR(20)       DEFAULT NULL,
@@ -83,8 +83,7 @@ export const migrate = async (sql: Sql) => {
     );
   `
 
-  await sql`CREATE UNIQUE INDEX IF NOT EXISTS "consumerNameIdx" ON "outboxConsumer" ("consumerName" DESC);`
-  await sql`CREATE INDEX IF NOT EXISTS "consumerNameAndPartKeyIdx" ON "outboxConsumer" ("consumerName" DESC, "partitionKey" NULLS LAST);`
+  await sql`CREATE UNIQUE INDEX IF NOT EXISTS "consumerNameIdx" ON "outboxConsumer" ("consumerName" DESC, "partitionKey");`
 
   await sql.unsafe(`
     DO $$
@@ -100,9 +99,9 @@ export const migrate = async (sql: Sql) => {
     DECLARE
       slot_created boolean;
     BEGIN
-      IF NOT EXISTS (SELECT 1 FROM pg_catalog.pg_replication_slots WHERE slot_name = '${SlotName}')
+      IF NOT EXISTS (SELECT 1 FROM pg_catalog.pg_replication_slots WHERE slot_name = '${slotName}')
       THEN
-          PERFORM pg_create_logical_replication_slot('${SlotName}', 'pgoutput');
+          PERFORM pg_create_logical_replication_slot('${slotName}', 'pgoutput');
           slot_created := true;
       END IF;
 

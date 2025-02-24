@@ -34,7 +34,7 @@ const startLogicalReplication = async <InsertResult>(params: LogicalReplicationP
   let currentTransaction = emptyTransaction<InsertResult>(location)
   const stream = await sql
     .unsafe(
-      `START_REPLICATION SLOT hermes_slot LOGICAL ${convertBigIntToLsn(incrementWAL(location))} (proto_version '1', publication_names '${params.state.publication}')`,
+      `START_REPLICATION SLOT ${state.slotName} LOGICAL ${convertBigIntToLsn(incrementWAL(location))} (proto_version '1', publication_names '${params.state.publication}')`,
     )
     .writable()
   const curriedOnData = _onData(params.columnConfig)

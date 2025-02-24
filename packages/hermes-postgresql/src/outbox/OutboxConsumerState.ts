@@ -3,6 +3,7 @@ import { TransactionSql } from 'postgres'
 import { Prettify } from 'ts-essentials'
 import { convertLsnToBigInt, Lsn, toLsn } from '../common/lsn.js'
 import { HermesSql } from '../common/types.js'
+import { getSlotName } from '../common/consts.js'
 
 type BaseOutboxConsumerModel = {
   id: number
@@ -105,9 +106,10 @@ class OutboxConsumerStore {
   }
 
   async createOrLoad(data: OutboxConsumerCreated) {
+    const slotName = getSlotName(this._consumerName, this._partitionKey)
     const restartLsnResults = await this._sql<
       [{ restart_lsn: Lsn }]
-    >`SELECT * FROM pg_replication_slots WHERE slot_name = 'hermes_slot';`
+    >`SELECT * FROM pg_replication_slots WHERE slot_name = ${slotName};`
     const restartLsn = restartLsnResults?.[0]?.restart_lsn || '0/00000000'
 
     await this._sql`
@@ -122,7 +124,7 @@ class OutboxConsumerStore {
         ${restartLsn},
         ${data.createdAt}
       )
-      ON CONFLICT ("consumerName") DO NOTHING;
+      ON CONFLICT ("consumerName", "partitionKey") DO NOTHING;
     `
 
     return await this.load()

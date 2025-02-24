@@ -39,7 +39,7 @@ describe.each([true, false])('Sending one event works', (serialization) => {
       const stop = await outbox.start()
       onDispose(stop)
 
-      const initialLsn = await getRestartLsn(sql)
+      const initialLsn = await getRestartLsn(sql, 'app')
 
       expect(await sql`select * from "outbox"`).toHaveLength(0)
       expect(await sql`select * from "outboxConsumer"`).toEqual([

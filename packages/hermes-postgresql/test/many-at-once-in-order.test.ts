@@ -40,7 +40,7 @@ describe(`Sending many events at once in order works`, () => {
       const stop = await outbox.start()
       onDispose(stop)
 
-      const initialLsn = await getRestartLsn(sql)
+      const initialLsn = await getRestartLsn(sql, 'app')
 
       expect(await sql`select * from "outbox"`).toHaveLength(0)
       expect(await sql`select * from "outboxConsumer"`).toEqual([
@@ -181,7 +181,7 @@ describe(`Sending many events at once in order works`, () => {
       const stop = await outbox.start()
       onDispose(stop)
 
-      const initialLsn = await getRestartLsn(sql)
+      const initialLsn = await getRestartLsn(sql, 'app')
 
       expect(await sql`select * from "outbox"`).toHaveLength(0)
       expect(await sql`select * from "outboxConsumer"`).toEqual([

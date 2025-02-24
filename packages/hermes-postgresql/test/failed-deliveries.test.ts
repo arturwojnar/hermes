@@ -59,7 +59,7 @@ describe(`Failed deliveries do not acknowledge related messages`, () => {
       const stop = await outbox.start()
       onDispose(stop)
 
-      const initialLsn = await getRestartLsn(sql)
+      const initialLsn = await getRestartLsn(sql, 'app')
 
       const envelopes = [event1, event2, event3, event4, event5, event6].map((event, i) => ({
         message: event,
@@ -98,8 +98,9 @@ describe(`Failed deliveries do not acknowledge related messages`, () => {
           .map(([{ redeliveryCount }]) => redeliveryCount)
           .reduce((p, c) => p + c),
       ).toBe(0)
-      // expect(messages.slice(6, 11).map(([{ redeliveryCount }]) => redeliveryCount)).toEqual([1, 1, 1, 1, 1, 1])
+
       resultConsumer = await sql`select * from "outboxConsumer"`
+
       expect(convertLsnToBigInt(resultConsumer[0].lastProcessedLsn)).toBeGreaterThan(convertLsnToBigInt(initialLsn))
       expect(resultConsumer[0].lastProcessedLsn).toBe(messages[messages.length - 1][0].lsn)
 

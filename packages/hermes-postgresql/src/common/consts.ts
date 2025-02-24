@@ -1,4 +1,8 @@
 const PublicationName = `hermes_pub`
-const SlotName = `hermes_slot`
+const SlotNamePrefix = `hermes_slot`
 
-export { PublicationName, SlotName }
+type SlotName = `${typeof SlotNamePrefix}_${string}_${string}`
+const getSlotName = (consumerName: string, partitionKey: string): SlotName =>
+  `${SlotNamePrefix}_${consumerName}_${partitionKey}`
+
+export { getSlotName, PublicationName, type SlotName }

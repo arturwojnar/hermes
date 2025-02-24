@@ -1,4 +1,5 @@
 import { NonEmptyString } from '@arturwojnar/hermes'
+import { type SlotName } from '../common/consts.js'
 import type { Lsn } from '../common/lsn.js'
 
 enum MessageType {
@@ -23,7 +24,7 @@ type LogicalReplicationState = {
   lastProcessedLsn: Lsn
   timestamp: Date
   publication: string
-  slotName: string
+  slotName: SlotName
 }
 
 type ColumnType = 'bigint' | 'text' | 'jsonb' | 'uint'

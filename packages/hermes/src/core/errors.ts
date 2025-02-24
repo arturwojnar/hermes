@@ -6,9 +6,12 @@ type HermesErrorDetails<T extends Record<string, unknown> = Record<string, never
   [K in keyof T]: T[K]
 }
 
-abstract class HermesError<T extends Record<string, unknown> = Record<string, never>> extends Error {
+abstract class HermesError<
+  T extends Record<string, unknown> = Record<string, never>,
+  Code extends string = HermesErrorCode,
+> extends Error {
   constructor(
-    public code: HermesErrorCode,
+    public code: Code,
     public details?: HermesErrorDetails<T>,
     message?: string,
   ) {
