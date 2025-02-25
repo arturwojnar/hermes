@@ -63,9 +63,9 @@
   "license": "ISC",
   "devDependencies": {
     "@jest/globals": "~29.7.0",
-    "mongodb-memory-server": "~10.1.2",
-    "mongoose": "~8.8.2",
-    "ts-essentials": "~10.0.3"
+    "mongodb-memory-server": "~10.1.4",
+    "mongoose": "~8.10.1",
+    "ts-essentials": "~10.0.4"
   },
   "peerDependencies": {
     "@arturwojnar/hermes": ">=1.0.0-alpha.0",

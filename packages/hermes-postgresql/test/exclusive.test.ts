@@ -1,7 +1,7 @@
 // import { OutboxConsumersCollectionName, OutboxMessagesCollectionName } from '../src/consts.js'
 import { Duration } from '@arturwojnar/hermes'
 import { describe, expect, jest, test } from '@jest/globals'
-import { ConsumerAlreadyTakenError } from '../src/common/errors.js'
+import { HermesConsumerAlreadyTakenError } from '../src/common/errors.js'
 import { createOutboxConsumer, HermesMessageEnvelope } from '../src/index.js'
 import { MedicineEvent } from './events.js'
 import { postgres } from './postgresql.js'
@@ -49,7 +49,7 @@ describe(`Hermes consumer keeps its instance exclusively, so no two consumers of
 
         expect('').toBe(`should throw an error`)
       } catch (error) {
-        expect(error).toEqual(new ConsumerAlreadyTakenError({ consumerName: 'app1', partitionKey: 'default' }))
+        expect(error).toEqual(new HermesConsumerAlreadyTakenError({ consumerName: 'app1', partitionKey: 'default' }))
       }
 
       const outbox2 = await createOutboxConsumer<MedicineEvent>({

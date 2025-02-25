@@ -3,7 +3,6 @@
   "version": "independent",
   "command": {
     "publish": {
-      "conventionalCommits": true,
       "message": "chore(release): set `package.json` to %s [skip ci]"
     }
   }

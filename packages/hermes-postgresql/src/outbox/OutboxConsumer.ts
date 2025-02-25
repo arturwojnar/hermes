@@ -3,7 +3,7 @@ import { setTimeout } from 'node:timers/promises'
 import postgres, { JSONValue, Options, PostgresType, Sql, TransactionSql } from 'postgres'
 import { getSlotName, PublicationName } from '../common/consts.js'
 import { ConsumerCreationParams } from '../common/ConsumerCreationParams.js'
-import { ConsumerAlreadyTakenError } from '../common/errors.js'
+import { HermesConsumerAlreadyTakenError } from '../common/errors.js'
 import {
   HermesMessageEnvelope,
   HermesSql,
@@ -144,7 +144,7 @@ export class OutboxConsumer<Message extends JSONValue> implements IOutboxConsume
       })
     } catch (e) {
       if (e instanceof postgres.PostgresError && (e.routine === 'ReplicationSlotAcquire' || e.code === '55006')) {
-        throw new ConsumerAlreadyTakenError({ consumerName, partitionKey })
+        throw new HermesConsumerAlreadyTakenError({ consumerName, partitionKey })
       }
 
       throw e

@@ -181,7 +181,6 @@ const outbox = createOutboxConsumer<RegisterPatientCommand | RegisterPatientEven
   publish: async (message) => {
     // if this function passes, then the message will be acknowledged;
     // otherwise, in case of an error the message won't be acknowledged.
-    // TODO: what with multiple consumers?
     if (Array.isArray(message)) {
       for (const nextMessage of message) {
         await publishOne(nextMessage)
@@ -193,23 +192,6 @@ const outbox = createOutboxConsumer<RegisterPatientCommand | RegisterPatientEven
   consumerName: 'app',
   asyncOutbox: useBasicAsyncOutboxConsumerPolicy(),
 })
-
-// const asyncOutbox = createAsyncOutboxConsumer<RegisterPatientCommand | RegisterPatientEvent>({
-//   getSql: () => outbox.getDbConnection(),
-//   consumerName: 'app',
-//   publish: async (message) => {
-//     // if this function passes, then the message will be acknowledged;
-//     // otherwise, in case of an error the message won't be acknowledged.
-//     // TODO: what with multiple consumers?
-//     if (Array.isArray(message)) {
-//       for (const nextMessage of message) {
-//         await publishOne(nextMessage)
-//       }
-//     } else {
-//       await publishOne(message)
-//     }
-//   },
-// })
 
 const revertRegistration = async (params: _RevertPatientRegistration['data'], email: Email) => {
   const messageIdParam = 'sub' in params ? params.sub.toString() : params.systemId.toString()
@@ -302,7 +284,6 @@ messageBus.handle<_StorePatient>(async ({ data }) => {
 
     await sql.begin(async (sql) => {
       await storePatient(data.systemId, data.sub, sql)
-      throw new Error()
       const patientRegisterdEvent = literalObject<MessageEnvelope<PatientRegisteredSuccessfully>>({
         message: {
           kind: 'event',

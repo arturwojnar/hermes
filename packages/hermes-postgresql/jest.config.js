@@ -21,7 +21,7 @@ export default {
   testMatch: ['**/*/*.test.ts', '<rootDir>/src/**/*.test.ts'],
   // testMatch: ['**/*/many-at-once-in-order.test.ts'],
   // testMatch: ['**/*/failed-deliveries.test.ts'],
-  // testMatch: ['**/*/createAsyncOpsQueue.unit.test.ts'],
+  // testMatch: ['**/*/exclusive.test.ts'],
   testEnvironment: 'node',
   testTimeout: 20000,
   moduleDirectories: ['node_modules', 'src'],

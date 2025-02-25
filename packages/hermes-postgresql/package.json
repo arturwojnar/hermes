@@ -2,7 +2,6 @@
   "name": "@arturwojnar/hermes-postgresql",
   "version": "1.0.0-alpha.7",
   "description": "Production-Ready TypeScript Outbox Pattern for PostgreSQL",
-  "private": true,
   "scripts": {
     "build": "rollup -c",
     "build:ts": "tsc -p tsconfig.build.json",
@@ -65,8 +64,8 @@
   },
   "devDependencies": {
     "@jest/globals": "~29.7.0",
-    "@testcontainers/postgresql": "~10.16.0",
-    "testcontainers": "~10.16.0",
+    "@testcontainers/postgresql": "~10.18.0",
+    "testcontainers": "~10.18.0",
     "ts-essentials": "~10.0.4"
   },
   "dependencies": {

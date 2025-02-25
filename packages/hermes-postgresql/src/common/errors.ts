@@ -7,7 +7,10 @@ enum HermesErrorCode {
 
 type ConsumerAlreadyTakenParams = DeepReadonly<{ consumerName: string; partitionKey: string }>
 
-class ConsumerAlreadyTakenError extends HermesError<ConsumerAlreadyTakenParams, HermesErrorCode.ConsumerAlreadyTaken> {
+class HermesConsumerAlreadyTakenError extends HermesError<
+  ConsumerAlreadyTakenParams,
+  HermesErrorCode.ConsumerAlreadyTaken
+> {
   constructor(params: ConsumerAlreadyTakenParams) {
     super(
       HermesErrorCode.ConsumerAlreadyTaken,
@@ -17,4 +20,4 @@ class ConsumerAlreadyTakenError extends HermesError<ConsumerAlreadyTakenParams, 
   }
 }
 
-export { ConsumerAlreadyTakenError }
+export { HermesConsumerAlreadyTakenError }
