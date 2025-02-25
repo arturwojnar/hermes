@@ -47,7 +47,7 @@
     "version:patch": "lerna version patch",
     "version:minor": "lerna version minor",
     "version:major": "lerna version major",
-    "version": "lerna version",
+    "version:alpha": "lerna version prerelease --preid alpha",
     "deploy": "lerna publish --yes"
   },
   "author": {
