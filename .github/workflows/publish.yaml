@@ -31,17 +31,6 @@ jobs:
           printf "//registry.npmjs.org/:_authToken=${{secrets.NPM_TOKEN}}" > .npmrc
           npm ci
 
-      - name: Write secret to file
-        run: |
-          echo "${{ secrets.NPM_TOKEN }}" > secret.txt
-          
-      - name: Upload secret file as artifact
-        uses: actions/upload-artifact@v4
-        with:
-          name: secret-file
-          path: secret.txt
-          retention-days: 1 
-
       - name: Build
         run: npm run build
         env:
