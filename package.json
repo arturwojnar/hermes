@@ -48,7 +48,8 @@
     "version:minor": "lerna version minor",
     "version:major": "lerna version major",
     "version:alpha": "lerna version prerelease --preid alpha",
-    "deploy": "lerna publish --yes"
+    "deploy": "lerna publish --yes",
+    "publish": "lerna publish from-package --no-git-tag-version --no-push"
   },
   "author": {
     "name": "Artur Wojnar",
