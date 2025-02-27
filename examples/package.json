@@ -36,9 +36,9 @@
     "typescript-transform-paths": "~3.4.7"
   },
   "dependencies": {
-    "@arturwojnar/hermes": "~1.0.0-alpha.7",
-    "@arturwojnar/hermes-mongodb": "~1.0.0-alpha.7",
-    "@arturwojnar/hermes-postgresql": "~1.0.0-alpha.7",
+    "@arturwojnar/hermes": "~1.0.0-alpha.8",
+    "@arturwojnar/hermes-mongodb": "~1.0.0-alpha.9",
+    "@arturwojnar/hermes-postgresql": "~1.0.0-alpha.9",
     "@event-driven-io/emmett": "~0.23.0",
     "@types/express": "~5.0.0",
     "amqplib": "~0.10.3",

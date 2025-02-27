@@ -74,6 +74,6 @@
     "postgres": "~3.4.5"
   },
   "peerDependencies": {
-    "@arturwojnar/hermes": "~1.0.0-alpha.7"
+    "@arturwojnar/hermes": "~1.0.0-alpha.8"
   }
 }

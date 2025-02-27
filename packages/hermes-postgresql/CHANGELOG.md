@@ -4,9 +4,9 @@
 
 First release of the Hermes PostgreSQL! 😍 🎉
 
-_A mythical god who brings the realiability to your system_ 🫒 _by implementing the Outbox pattern, so you don't have to think of it too much._
+_A mythical god who brings reliability to your system 🫒 by implementing the Outbox pattern, so you don't have to think of it too much._
 
-_You don't have to pray for that gifts of nature, just run **npm** and type:_
+_You don't have to pray for the gifts of nature. Just run npm and type:_
 
 ```bash
 npm i hermes hermes-postgresql

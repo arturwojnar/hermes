@@ -18,7 +18,7 @@ hero:
       link: https://hermes.arturwojnar.dev/hermes-mongodb/index.html
     - theme: alt
       text: Hermes PostreSQL API
-      link: /hermes-postgresql/index.md
+      link: https://hermes.arturwojnar.dev/hermes-postgresql/index.html
 
 features:
   - title: Optimized for large-scale🚀
