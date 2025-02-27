@@ -1,6 +1,6 @@
 {
   "name": "@arturwojnar/hermes-postgresql",
-  "version": "1.0.0-alpha.8",
+  "version": "1.0.0-alpha.9",
   "description": "Production-Ready TypeScript Outbox Pattern for PostgreSQL",
   "scripts": {
     "build": "rollup -c",
