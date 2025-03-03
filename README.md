@@ -30,6 +30,12 @@ The Outbox pattern makes an atomic operation from a database operation (e.g. mod
 
 ## ⚙️ Install
 
+If you work with **PostgreSQL**, then:
+
+```bash
+npm i @arturwojnar/hermes @arturwojnar/hermes-postgresql
+```
+
 If you work with **MongoDB**, then:
 
 ```bash
@@ -47,3 +53,7 @@ Head over to the [discussions](https://github.com/arturwojnar/hermes/discussions
 ## 🤝 Thanks
 
 Special thanks to [Magdalena Gańczorz](https://www.linkedin.com/in/magdalena-ga%C5%84czorz-248bb6165/) for helping me with **Hermes** logo.
+
+## Join the Discord
+
+You can join the community of **Hermes-PostgreSQL** at [Discrod](https://discord.gg/EmMj58mu).

@@ -10,6 +10,8 @@ npm i hermes hermes-postgresql
 
 If you look for a full example, then [here you go](https://github.com/arturwojnar/hermes/blob/main/examples/postgresql/patient-registration/index.ts)! 🎉🎉🎉
 
+You can join the community of **Hermes-PostgreSQL** at [Discrod](https://discord.gg/EmMj58mu).
+
 ### Features
 
 - **_Hermes PostgreSQL_ relies on the thin and fast [Postgres.js](https://github.com/porsager/postgres)**
