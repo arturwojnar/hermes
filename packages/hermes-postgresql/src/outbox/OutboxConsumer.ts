@@ -72,7 +72,7 @@ export class OutboxConsumer<Message extends JSONValue> implements IOutboxConsume
       : createNonBlockingPublishingQueue
     const publishingQueue = createPublishingQueue<InsertResult>(onPublish, {
       onFailedPublish,
-      waitAfterFailedPublish: this._params.waitAfterFailedPublish || Duration.ofSeconds(1),
+      waitAfterFailedPublish: this._params.waitAfterFailedPublish || Duration.ofSeconds(30),
     })
     const sql = (this._sql = this._createClient({
       ...getOptions(),

@@ -1,8 +1,9 @@
+import { Duration } from '@arturwojnar/hermes'
 import { describe, expect, jest, test } from '@jest/globals'
 import { setTimeout } from 'node:timers/promises'
-import { Lsn } from '../common/lsn.js'
-import { InsertResult } from '../common/types.js'
-import { Transaction } from '../subscribeToReplicationSlot/types.js'
+import { Lsn } from '../../common/lsn.js'
+import { InsertResult } from '../../common/types.js'
+import { Transaction } from '../../subscribeToReplicationSlot/types.js'
 import { type MessageToPublish, createNonBlockingPublishingQueue } from './createNonBlockingPublishingQueue.js'
 
 describe(`createNonBlockingPublishingQueue`, () => {
@@ -23,7 +24,8 @@ describe(`createNonBlockingPublishingQueue`, () => {
 
   test('should queue unique messages', async () => {
     const mockPublish = createMockPublish()
-    const queue = createNonBlockingPublishingQueue(mockPublish)
+    // 0 means no resending
+    const queue = createNonBlockingPublishingQueue(mockPublish, { waitAfterFailedPublish: Duration.ofSeconds(0) })
 
     const message1 = createMockMessage('0/1')
     const message2 = createMockMessage('0/2')
@@ -32,11 +34,12 @@ describe(`createNonBlockingPublishingQueue`, () => {
     queue.queue(message2)
 
     expect(queue.size()).toBe(2)
+    queue.dispose()
   })
 
   test('should ignore duplicate messages based on LSN', () => {
     const mockPublish = createMockPublish()
-    const queue = createNonBlockingPublishingQueue(mockPublish)
+    const queue = createNonBlockingPublishingQueue(mockPublish, { waitAfterFailedPublish: Duration.ofSeconds(0) })
 
     const message1 = createMockMessage('0/1')
     const message2 = createMockMessage('0/1') // Same LSN
@@ -45,6 +48,7 @@ describe(`createNonBlockingPublishingQueue`, () => {
     queue.queue(message2)
 
     expect(queue.size()).toBe(1)
+    queue.dispose()
   })
 
   test('should publish messages in FIFO order if proccessing time of each message is the same', async () => {
@@ -55,7 +59,9 @@ describe(`createNonBlockingPublishingQueue`, () => {
         publishedMessages.push(message.transaction.lsn)
       })
 
-    const { queue, size, run } = createNonBlockingPublishingQueue(mockPublish)
+    const { queue, size, run, dispose } = createNonBlockingPublishingQueue(mockPublish, {
+      waitAfterFailedPublish: Duration.ofSeconds(0),
+    })
 
     const message1 = createMockMessage('0/1')
     const message2 = createMockMessage('0/2')
@@ -72,6 +78,7 @@ describe(`createNonBlockingPublishingQueue`, () => {
     expect(message4.acknowledge).toHaveBeenCalledTimes(1)
 
     expect(size()).toBe(0)
+    dispose()
   })
 
   test(`must confirm messages in the order despite the fact the first message's processing got delayed.`, async () => {
@@ -95,7 +102,9 @@ describe(`createNonBlockingPublishingQueue`, () => {
         publishedMessages.push(message.transaction.lsn)
       })
 
-    const { queue, size, run, waitUntilIsEmpty } = createNonBlockingPublishingQueue(mockPublish)
+    const { queue, size, run, waitUntilIsEmpty, dispose } = createNonBlockingPublishingQueue(mockPublish, {
+      waitAfterFailedPublish: Duration.ofSeconds(0),
+    })
 
     const message1 = createMockMessage('0/1')
     const message2 = createMockMessage('0/2')
@@ -129,5 +138,83 @@ describe(`createNonBlockingPublishingQueue`, () => {
       expect(timestamps[m1.transaction.lsn]).toBeLessThanOrEqual(timestamps[m2.transaction.lsn])
       return m2
     })
+
+    dispose()
+  })
+
+  test(`when 'waitAfterFailedPublish' is set to non-zero or unspecified, then the queue must resend failed messages`, async () => {
+    const timestamps: { [key: Lsn]: number } = {}
+    const createMockMessage = (lsn: Lsn): MessageToPublish<InsertResult> => ({
+      transaction: createMockTransaction(lsn),
+      acknowledge: jest.fn<() => Promise<void>>().mockImplementation(() => {
+        timestamps[lsn] = Date.now()
+        return Promise.resolve()
+      }),
+    })
+
+    const publishedMessages: Lsn[] = []
+    let fails1 = 0
+    let fails2 = 0
+    let fails3 = 0
+    const mockPublish = jest
+      .fn<(messageToPublish: MessageToPublish<InsertResult>) => Promise<void>>()
+      .mockImplementation(async (message) => {
+        if (message.transaction.lsn === '0/1' && fails1 < 2) {
+          fails1++
+          return Promise.reject(new Error())
+        }
+
+        if (message.transaction.lsn === '0/10' && fails2 < 1) {
+          fails2++
+          return Promise.reject(new Error())
+        }
+
+        if (message.transaction.lsn === '0/12' && fails2 < 1) {
+          publishedMessages.push(message.transaction.lsn)
+          await setTimeout(250)
+          return Promise.resolve()
+        }
+
+        if (message.transaction.lsn === '0/30' && fails3 < 1) {
+          fails3++
+          return Promise.reject(new Error())
+        }
+
+        publishedMessages.push(message.transaction.lsn)
+
+        return Promise.resolve()
+      })
+
+    const { queue, size, run, waitUntilIsEmpty, dispose } = createNonBlockingPublishingQueue(mockPublish, {
+      waitAfterFailedPublish: Duration.ofMiliseconds(500),
+    })
+
+    const messages = Array(30)
+      .fill(0)
+      .map((_, i) => createMockMessage(`0/${i + 1}`))
+
+    await Promise.all(messages.map((message) => run(queue(message))))
+    await waitUntilIsEmpty()
+
+    messages.forEach((message) => expect(message.acknowledge).toHaveBeenCalledTimes(1))
+
+    const expectedOrder = [
+      ...messages
+        .filter(({ transaction: { lsn } }) => !['0/1', '0/10', '0/30'].includes(lsn))
+        .map(({ transaction: { lsn } }) => lsn),
+      '0/1',
+      '0/10',
+      '0/30',
+    ]
+    expect(publishedMessages).toEqual(expectedOrder)
+
+    // expect(message5.acknowledge).toHaveBeenCalledTimes(1)
+    // expect(message6.acknowledge).toHaveBeenCalledTimes(1)
+    expect(size()).toBe(0)
+    expect(fails1).toBe(2)
+    expect(fails2).toBe(1)
+    expect(fails3).toBe(1)
+
+    dispose()
   })
 })

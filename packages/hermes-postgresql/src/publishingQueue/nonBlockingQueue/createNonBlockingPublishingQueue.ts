@@ -1,9 +1,9 @@
-import { CancellationPromise } from '@arturwojnar/hermes'
-import { createAsyncOpsQueue } from '../common/createAsyncOpsQueue.js'
-import { Lsn } from '../common/lsn.js'
-import { MessageToPublish, PublishingQueue, PublishingQueueOptions } from './publishingQueue.js'
-
-type StateMessage<InsertResult> = MessageToPublish<InsertResult> & { delivered: boolean }
+import { CancellationPromise, Duration } from '@arturwojnar/hermes'
+import { createAsyncOpsQueue } from '../../common/createAsyncOpsQueue.js'
+import { Lsn } from '../../common/lsn.js'
+import { MessageToPublish, PublishingQueue, PublishingQueueOptions } from '../publishingQueue.js'
+import { createIntervalResendingStrategy } from './intervalResendingStrategy.js'
+import { StateMessage } from './typings.js'
 
 const createNonBlockingPublishingQueue = <InsertResult>(
   publish: (messageToPublish: MessageToPublish<InsertResult>) => Promise<void>,
@@ -16,8 +16,16 @@ const createNonBlockingPublishingQueue = <InsertResult>(
   const messages = new Array<StateMessage<InsertResult>>()
   let publishingPromise = CancellationPromise.resolved()
 
+  const getNextMessageThatShouldBeDelivered = () => {
+    return messages.find((message) => !message.delivered)
+  }
+
   const getNextTransactionLsnThatShouldBeDelivered = () => {
-    return messages?.[0]?.transaction?.lsn
+    return getNextMessageThatShouldBeDelivered()?.transaction?.lsn
+  }
+
+  const getState = (lsn: Lsn) => {
+    return messages.find(({ transaction }) => transaction.lsn === lsn)
   }
 
   const queue = (messageToPublish: MessageToPublish<InsertResult>) => {
@@ -26,7 +34,7 @@ const createNonBlockingPublishingQueue = <InsertResult>(
     }
 
     ids.add(messageToPublish.transaction.lsn)
-    messages.push({ ...messageToPublish, delivered: false })
+    messages.push({ ...messageToPublish, delivered: false, failed: true })
 
     return messageToPublish
   }
@@ -60,7 +68,7 @@ const createNonBlockingPublishingQueue = <InsertResult>(
   }
 
   const _getFirstMessagedThatIsDeliveredButNotAcked = () => {
-    return messages?.[0]?.delivered ? messages[0] : undefined
+    return messages.find((message) => message.delivered)
   }
 
   const _publishMessage = async (message: MessageToPublish<InsertResult>) => {
@@ -88,14 +96,31 @@ const createNonBlockingPublishingQueue = <InsertResult>(
         const index = messages.findIndex(({ transaction }) => transaction.lsn === message.transaction.lsn)
 
         if (index >= 0 && !messages[index].delivered) {
+          console.log(`Processed ${messages[index].transaction.lsn}`)
           messages[index].delivered = true
         }
       }
 
       return 'published'
     } catch (error) {
+      const state = getState(message.transaction.lsn)
+
+      if (state) {
+        state.failed = true
+      }
+
       await onFailedPublish(message.transaction)
     }
+  }
+
+  let stopResending: () => void
+  if (options?.waitAfterFailedPublish?.ms !== 0) {
+    stopResending = createIntervalResendingStrategy<InsertResult>()({
+      getMessages: () => messages,
+      publishMessage: _publishMessage,
+      isPublishing: () => publishingPromise.isPending,
+      interval: options?.waitAfterFailedPublish || Duration.ofSeconds(30),
+    })
   }
 
   return {
@@ -104,6 +129,7 @@ const createNonBlockingPublishingQueue = <InsertResult>(
     run,
     size: () => messages.length,
     waitUntilIsEmpty: () => publishingPromise,
+    dispose: () => stopResending?.(),
   }
 }
 

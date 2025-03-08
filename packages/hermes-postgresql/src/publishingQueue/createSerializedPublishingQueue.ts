@@ -1,4 +1,4 @@
-import { assertNever, CancellationPromise, Duration } from '@arturwojnar/hermes'
+import { assertNever, CancellationPromise, Duration, noop } from '@arturwojnar/hermes'
 import { setTimeout } from 'node:timers/promises'
 import { Lsn } from '../common/lsn.js'
 import { Transaction } from '../subscribeToReplicationSlot/types.js'
@@ -110,6 +110,7 @@ const createSerializedPublishingQueue = <InsertResult>(
     run,
     size: () => messages.length,
     waitUntilIsEmpty: () => publishingPromise,
+    dispose: noop,
   }
 }
 
