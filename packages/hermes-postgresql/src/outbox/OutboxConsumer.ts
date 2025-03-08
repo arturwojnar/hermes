@@ -13,11 +13,11 @@ import {
   PublishOptions,
   Stop,
 } from '../common/types.js'
-import { createNonBlockingPublishingQueue } from '../publishingQueue/createNonBlockingPublishingQueue.js'
 import {
   createSerializedPublishingQueue,
   MessageToPublish,
 } from '../publishingQueue/createSerializedPublishingQueue.js'
+import { createNonBlockingPublishingQueue } from '../publishingQueue/nonBlockingQueue/createNonBlockingPublishingQueue.js'
 import { startLogicalReplication } from '../subscribeToReplicationSlot/logicalReplicationStream.js'
 import { LogicalReplicationState, Transaction } from '../subscribeToReplicationSlot/types.js'
 import { killReplicationProcesses } from './killBackendReplicationProcesses.js'

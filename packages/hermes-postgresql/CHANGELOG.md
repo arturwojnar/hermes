@@ -1,5 +1,34 @@
 # Change Log
 
+# [1.0.0-alpha.8](https://github.com/arturwojnar/hermes/compare/v1.0.0-alpha.9...v1.0.0-alpha.10) (2025-03-08)
+
+Greetings! 😍 🎉
+
+In today's small release I introduced a feature that is expressed by the setting `waitAfterFailedPublish`.
+
+Its default value if `Duration.ofSeconds(30)`. If 0, it will be disabled.
+
+If a publishing of a message fail, then the next attempt will happen after the value specified via `waitAfterFailedPublish`.
+
+See a test in the file [createNonBlockingPublishingQueue.unit.test.ts](./src/publishingQueue/nonBlockingQueue/createNonBlockingPublishingQueue.unit.test.ts):
+
+- `when 'waitAfterFailedPublish' is set to non-zero or unspecified, then the queue must resend failed messages`
+
+Have a wonderful day! 🎉
+
+```typescript
+const outbox = createOutboxConsumer<RegisterPatientEvent>({
+  getOptions() {
+    /*...*/
+  },
+  publish: async (message) => {
+    /*...*/
+  },
+  consumerName: 'app',
+  waitAfterFailedPublish: Duration.ofSeconds(30),
+})
+```
+
 # [1.0.0-alpha.8](https://github.com/arturwojnar/hermes/compare/@arturwojnar/hermes-postgresql@1.0.0-alpha.7...@arturwojnar/hermes-postgresql@1.0.0-alpha.8) (2025-02-24)
 
 First release of the Hermes PostgreSQL! 😍 🎉
