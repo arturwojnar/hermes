@@ -1,9 +1,8 @@
-import { assertNever, CancellationPromise, Duration } from '@arturwojnar/hermes'
+import { assertNever, CancellationPromise, Duration, noop } from '@arturwojnar/hermes'
 import { setTimeout } from 'node:timers/promises'
 import { Lsn } from '../common/lsn.js'
 import { Transaction } from '../subscribeToReplicationSlot/types.js'
-import { MessageToPublish } from './createNonBlockingPublishingQueue.js'
-import { PublishingQueue } from './publishingQueue.js'
+import { MessageToPublish, PublishingQueue } from './publishingQueue.js'
 
 type PublishingQueueOptions<InsertResult> = {
   waitAfterFailedPublish?: Duration
@@ -110,6 +109,7 @@ const createSerializedPublishingQueue = <InsertResult>(
     run,
     size: () => messages.length,
     waitUntilIsEmpty: () => publishingPromise,
+    dispose: noop,
   }
 }
 

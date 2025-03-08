@@ -20,6 +20,7 @@ type PublishingQueue<Name extends PublishingQueueType = PublishingQueueType, Ins
   size: () => number
   waitUntilIsEmpty: () => CancellationPromise
   name(): Name
+  dispose: () => void
 }>
 
 export type { MessageToPublish, PublishingQueue, PublishingQueueOptions, PublishingQueueType }
