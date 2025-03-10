@@ -9,7 +9,7 @@ export default defineConfig({
     logo: '/logo-main.png',
     nav: [
       { text: 'Home', link: '/' },
-      { text: 'What is Hermes', link: '/pages/what-is-hermes' },
+      { text: 'Documentation', link: '/pages/what-is-hermes' },
       {
         text: 'Release Notes',
         link: 'https://github.com/arturwojnar/hermes/releases',
@@ -17,6 +17,8 @@ export default defineConfig({
     ],
 
     sidebar: [
+      { text: 'What is Hermes', link: '/pages/what-is-hermes.md' },
+      { text: 'Getting Started', link: '/pages/getting-started.md' },
       {
         text: 'Examples',
         items: [
