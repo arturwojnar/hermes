@@ -17,17 +17,17 @@ hero:
       text: Hermes MongoDB API
       link: https://hermes.arturwojnar.dev/hermes-mongodb/index.html
     - theme: alt
-      text: Hermes PostreSQL API
+      text: Hermes PostgreSQL API
       link: https://hermes.arturwojnar.dev/hermes-postgresql/index.html
 
 features:
-  - title: Optimized for large-scale🚀
-    details: By default Hermes updates only a consumer to keep track of last processed event. Also, you can utilize partion keys to scale out your application
-  - title: Message broker-agnostic🔌
+  - title: Optimized for large-scale 🚀
+    details: By default Hermes updates only a consumer to keep track of last processed event. Also, you can utilize partition keys to scale out your application
+  - title: Message broker-agnostic 🔌
     details: You can plug in a cloud-native solution, Apache Pulsar or RabbitMQ
-  - title: Supports MongoDB's Change Streams🍃
-    details: And PostreSQL integration is coming!
-  - title: Fully covered by tests📑
+  - title: Supports MongoDB's Change Streams 🍃
+    details: And PostgreSQL integration is coming!
+  - title: Fully covered by tests 📑
     details: You may sleep well at night because Hermes features are well covered by tests
 ---
 

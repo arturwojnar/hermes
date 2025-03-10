@@ -8,7 +8,7 @@
 ### What is Hermes?
 
 **Hermes** is a production-ready implementation of the [Outbox Pattern](https://microservices.io/patterns/data/transactional-outbox.html).\
-Use it to provide [at-least-once delivery](https://microservices.io/patterns/communication-style/idempotent-consumer.html) to your system's consumers, so depite a timeout or a message broker outage, **Hermes** will keep trying to deliver that message to the broker.\
+Use it to provide [at-least-once delivery](https://microservices.io/patterns/communication-style/idempotent-consumer.html) to your system's consumers, so despite a timeout or a message broker outage, **Hermes** will keep trying to deliver that message to the broker.\
 After Chris Richardson:
 
 > At-least once delivery guarantees that a message broker will deliver a message to a consumer even if errors occur. One side-effect, however, is that the consumer can be invoked repeatedly for the same message
