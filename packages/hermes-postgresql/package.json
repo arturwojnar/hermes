@@ -58,7 +58,7 @@
       },
       "require": {
         "types": "./lib/index.d.ts",
-        "default": "./lib/index.js"
+        "default": "./lib/index.cjs"
       }
     }
   },
