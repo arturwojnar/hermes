@@ -42,7 +42,7 @@
   "exports": {
     ".": {
       "import": {
-        "types": "./lib/index.d.mts",
+        "types": "./lib/index.d.ts",
         "default": "./lib/index.mjs"
       },
       "require": {
