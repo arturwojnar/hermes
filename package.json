@@ -19,9 +19,9 @@
     "url": "git@github.com:arturwojnar/hermes.git"
   },
   "bugs": {
-    "url": "https://github.com/ryansonshine/arturwojnar/hermes/issues"
+    "url": "https://github.com/arturwojnar/hermes/issues"
   },
-  "homepage": "https://github.com/ryansonshine/arturwojnar/hermes#readme",
+  "homepage": "https://github.com/arturwojnar/hermes#readme",
   "scripts": {
     "prepare": "husky",
     "build": "npm run build:ts && npm run build --ws",
