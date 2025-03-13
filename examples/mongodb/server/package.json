@@ -1,0 +1,41 @@
+{
+  "name": "mongodb-example-container",
+  "version": "1.0.0",
+  "description": "A containerized example of using Hermes MongoDB",
+  "main": "index.js",
+  "type": "module",
+  "scripts": {
+    "test": "test",
+    "build": "tsc",
+    "dev": "tsc --watch",
+    "start": "node dist/index.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+ssh://git@github.com/arturwojnar/hermes.git"
+  },
+  "author": "Artur Wojnar",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/arturwojnar/hermes/issues"
+  },
+  "homepage": "https://github.com/arturwojnar/hermes#readme",
+  "dependencies": {
+    "@arturwojnar/hermes": "1.0.0-alpha.9",
+    "@arturwojnar/hermes-mongodb": "1.0.0-alpha.11",
+    "chalk": "5.4.1",
+    "cors": "2.8.5",
+    "express": "4.21.2",
+    "helmet": "8.0.0",
+    "ora": "8.2.0",
+    "uuid": "11.1.0"
+  },
+  "devDependencies": {
+    "@testcontainers/mongodb": "10.19.0",
+    "eslint": "9.22.0",
+    "globals": "16.0.0",
+    "testcontainers": "10.19.0",
+    "typescript": "5.8.2",
+    "typescript-eslint": "8.26.1"
+  }
+}
