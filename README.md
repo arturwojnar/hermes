@@ -58,7 +58,7 @@ npm run run:mongodb-example
 
 ## 📁 Docs
 
-Visit **Hermes** [docs](https://hermes.arturwojnar.dev/).
+Visit **Hermes** [docs](https://docs.hermesjs.tech/).
 
 ## 💬 Discussions
 

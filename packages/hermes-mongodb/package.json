@@ -38,7 +38,7 @@
   "bugs": {
     "url": "https://github.com/arturwojnar/hermes/issues"
   },
-  "homepage": "https://hermes.arturwojnar.dev",
+  "homepage": "https://docs.hermesjs.tech",
   "exports": {
     ".": {
       "import": {
