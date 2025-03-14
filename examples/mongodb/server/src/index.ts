@@ -44,6 +44,12 @@ const outbox = createOutboxConsumer<MedicineEvent>({
   client,
   db,
   publish: async (event) => {
+    /*
+      If this callback successfully finishes ✅,
+      then the event is considered as delivered 📨🎉;
+      If this callback throws an error ⛔,
+      then Hermes MongoDB 🫒 will try to deliver this message again later ⏲️.
+    */
     console.log(chalk.blue(`Received the event`), chalk.blue(JSON.stringify(event, null, 2)))
   },
 })
@@ -65,7 +71,7 @@ app.post('/test', async (_req, res) => {
     createdAt: new Date(),
   }
 
-  // 👉👉👉 THis happens in one transaction 👈👈👈
+  // 👉👉👉 This happens in one transaction 👈👈👈
   const result = await client.withSession((session) =>
     session.withTransaction(async (session) => {
       const result = await db.collection<MedicineAssignment>('medicines').insertOne(entity, { session })
@@ -142,7 +148,7 @@ const stopDeps = async () => {
     const sigterm = async () => {
       spinner.text = 'Stopping the dependencies...'
       await stopDeps()
-      spinner.clear()
+      spinner.succeed()
       process.exit()
     }
 

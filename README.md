@@ -42,6 +42,20 @@ If you work with **MongoDB**, then:
 npm i @arturwojnar/hermes @arturwojnar/hermes-mongodb
 ```
 
+## 📌 Examples
+
+You can try out the examples.
+
+```bash
+npm run run:postgresql-example
+```
+
+or
+
+```bash
+npm run run:mongodb-example
+```
+
 ## 📁 Docs
 
 Visit **Hermes** [docs](https://hermes.arturwojnar.dev/).

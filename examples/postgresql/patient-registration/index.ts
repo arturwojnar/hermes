@@ -6,6 +6,7 @@ import {
   addDisposeOnSigterm,
   literalObject,
   parseUuid4,
+  swallow,
 } from '@arturwojnar/hermes'
 import {
   type HermesMessageEnvelope,
@@ -14,16 +15,21 @@ import {
   useBasicAsyncOutboxConsumerPolicy,
 } from '@arturwojnar/hermes-postgresql'
 import { Command, DefaultCommandMetadata, DefaultRecord, Event, getInMemoryMessageBus } from '@event-driven-io/emmett'
+import { PostgreSqlContainer } from '@testcontainers/postgresql'
+import chalk from 'chalk'
 import cors from 'cors'
 import express from 'express'
 import helmet from 'helmet'
 import { StatusCodes } from 'http-status-codes'
 import crypto, { randomInt } from 'node:crypto'
 import { setTimeout } from 'node:timers/promises'
+import ora from 'ora'
 import postgres, { PostgresError, Sql } from 'postgres'
+import { AbstractStartedContainer } from 'testcontainers'
 import validator from 'validator'
 
 const app = express()
+const hostPort = Number(process.env.HOST_PORT || 5444)
 
 app.use(express.json())
 app.use(cors())
@@ -93,9 +99,29 @@ type PatientRegistrationFailed = DomainEvent<
 type RegisterPatientCommand = _AddUserToIdp | _StorePatient | _RevertPatientRegistration
 type RegisterPatientEvent = PatientRegisteredSuccessfully | PatientRegistrationFailed
 
+let deps: AbstractStartedContainer[] = []
+const runDeps = async () => {
+  deps = [
+    await new PostgreSqlContainer('postgres:17-alpine')
+      .withNetworkAliases('postgres')
+      .withHostname('postgres')
+      .withExposedPorts({ container: 5432, host: hostPort })
+      .withUsername('hermes')
+      .withPassword('hermes')
+      .withDatabase('hermes')
+      .withCommand(['postgres', '-c', 'wal_level=logical'])
+      .start(),
+  ]
+
+  await setTimeout(Duration.ofSeconds(5).ms)
+}
+const stopDeps = async () => {
+  await Promise.all(deps.map((dep) => dep.stop()))
+}
+
 const dbOptions = {
   host: 'localhost',
-  port: 5434,
+  port: hostPort,
   database: 'hermes',
   user: 'hermes',
   password: 'hermes',
@@ -172,15 +198,20 @@ const outbox = createOutboxConsumer<RegisterPatientCommand | RegisterPatientEven
   getOptions() {
     return {
       host: 'localhost',
-      port: 5434,
+      port: 5444,
       database: 'hermes',
       user: 'hermes',
       password: 'hermes',
     }
   },
   publish: async (message) => {
-    // if this function passes, then the message will be acknowledged;
-    // otherwise, in case of an error the message won't be acknowledged.
+    /*
+      If this callback successfully finishes ✅,
+      then the event is considered as delivered 📨🎉;
+      If this callback throws an error ⛔,
+      then Hermes PostgreSQL 🫒 will try to deliver this message again later ⏲️.
+    */
+
     if (Array.isArray(message)) {
       for (const nextMessage of message) {
         await publishOne(nextMessage)
@@ -340,18 +371,50 @@ app.post<string, any, RegisterPatientResponse, RegisterPatientRequest>('/patient
 })
 
 const main = async () => {
+  const spinner = ora({ color: 'green', text: 'Starting the dependencies...' })
+
   try {
+    spinner.start()
+
+    await runDeps()
+
+    spinner.succeed()
+    spinner.start()
+    spinner.text = 'Connecting to the dependencies...'
+
     const stopOutbox = await outbox.start()
-    // const stopAsyncOutbox = asyncOutbox.start()
+
+    spinner.succeed()
+
+    console.log(chalk.green(`\r\n\Everything is set!\r\n\r\n`))
+    console.log(
+      chalk.green(`
+      Now you can register a new patient!\r\n      Use the cURL:\r\n
+    `),
+    )
+    console.log(
+      chalk.yellow(`
+      curl --location 'http://localhost:3000/patient' \ \r\n
+      --header 'Content-Type: application/json' \ \r\n
+      --data-raw '{"email": "john.kowalski@gmail.com"}'\r\n
+    `),
+    )
 
     addDisposeOnSigterm(stopOutbox)
     // addDisposeOnSigterm(stopAsyncOutbox)
     addDisposeOnSigterm(sql.end)
+    addDisposeOnSigterm(async () => {
+      spinner.text = 'Stopping the dependencies...'
+      await stopDeps()
+      spinner.succeed()
+      process.exit()
+    })
 
     addDisposeOnSigterm(() => process.exit(0))
   } catch (error) {
-    //
-    console.error(error)
+    await swallow(() => stopDeps())
+    spinner.fail()
+    console.log(chalk.red(error))
     throw error
   }
 }
@@ -359,3 +422,5 @@ const main = async () => {
 main()
 
 app.listen(3000)
+
+console.log(chalk.blue(`\r\nApp started at 3000.\r\n\r\n`))
