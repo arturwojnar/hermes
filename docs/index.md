@@ -15,10 +15,10 @@ hero:
       link: /pages/getting-started.md
     - theme: alt
       text: Hermes MongoDB API
-      link: https://hermes.arturwojnar.dev/hermes-mongodb/index.html
+      link: https://docs.hermesjs.tech/hermes-mongodb/index.html
     - theme: alt
       text: Hermes PostgreSQL API
-      link: https://hermes.arturwojnar.dev/hermes-postgresql/index.html
+      link: https://docs.hermesjs.tech/hermes-postgresql/index.html
 
 features:
   - title: Optimized for large-scale 🚀
