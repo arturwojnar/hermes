@@ -64,8 +64,8 @@
   },
   "devDependencies": {
     "@jest/globals": "~29.7.0",
-    "@testcontainers/postgresql": "~10.18.0",
-    "testcontainers": "~10.18.0",
+    "@testcontainers/postgresql": "~10.24.0",
+    "testcontainers": "~10.24.0",
     "ts-essentials": "~10.0.4"
   },
   "dependencies": {
