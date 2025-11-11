@@ -140,3 +140,5 @@ docs/public/hermes-postgresql
 # cache/
 coverage/
 .rollup.cache/
+
+packages/hermes/docs
