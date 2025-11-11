@@ -63,10 +63,10 @@
     "access": "public"
   },
   "devDependencies": {
-    "@jest/globals": "~29.7.0",
-    "ts-essentials": "~10.0.4"
+    "@jest/globals": "~30.2.0",
+    "ts-essentials": "~10.1.1"
   },
   "dependencies": {
-    "uuid": "~11.1.0"
+    "uuid": "~13.0.0"
   }
 }
