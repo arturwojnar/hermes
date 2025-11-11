@@ -1,0 +1,7 @@
+{
+  "name": "ChassisJS - HermesJS",
+  "short_name": "HermesJS",
+  "theme_color": "#ffffff",
+  "background_color": "#ffffff",
+  "display": "standalone"
+}
