@@ -4,6 +4,11 @@ import { defineConfig } from 'vitepress'
 export default defineConfig({
   title: 'Hermes',
   description: 'Production-ready implementation of the Outbox Pattern in TypeScript',
+  head: [
+    ['link', { rel: 'icon', type: 'image/x-icon', href: '/favicon.ico' }],
+    ['link', { rel: 'icon', type: 'image/png', sizes: '32x32', href: '/favicon-32x32.png' }],
+    ['link', { rel: 'icon', type: 'image/png', sizes: '16x16', href: '/favicon-16x16.png' }],
+  ],
   themeConfig: {
     // https://vitepress.dev/reference/default-theme-config
     logo: '/logo-main.png',
