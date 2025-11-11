@@ -3,14 +3,14 @@ import { AssertionError } from '../errors.js'
 import { assertDate } from './assert.js'
 
 test(`assertDate throws an AssertionError is the value is not a Date`, () => {
-  expect(() => assertDate(1)).toThrowError(AssertionError)
-  expect(() => assertDate('1')).toThrowError(AssertionError)
-  expect(() => assertDate(new Date('no date'))).toThrowError(AssertionError)
-  expect(() => assertDate(true)).toThrowError(AssertionError)
-  expect(() => assertDate({})).toThrowError(AssertionError)
-  expect(() => assertDate(undefined)).toThrowError(AssertionError)
-  expect(() => assertDate(null)).toThrowError(AssertionError)
-  expect(() => assertDate(new Date().getTime())).toThrowError(AssertionError)
+  expect(() => assertDate(1)).toThrow(AssertionError)
+  expect(() => assertDate('1')).toThrow(AssertionError)
+  expect(() => assertDate(new Date('no date'))).toThrow(AssertionError)
+  expect(() => assertDate(true)).toThrow(AssertionError)
+  expect(() => assertDate({})).toThrow(AssertionError)
+  expect(() => assertDate(undefined)).toThrow(AssertionError)
+  expect(() => assertDate(null)).toThrow(AssertionError)
+  expect(() => assertDate(new Date().getTime())).toThrow(AssertionError)
 
   try {
     assertDate('test')
