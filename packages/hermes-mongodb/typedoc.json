@@ -4,6 +4,7 @@
   "readme": "index.md",
   "entryPoints": ["src/index.ts"],
   "customCss": "typedoc.css",
+  "favicon": "public/favicon.ico",
   "navigationLinks": {
     "Hermes": "/"
   },
@@ -11,5 +12,6 @@
   // "plugin": ["typedoc-plugin-markdown"],
   "plugin": ["typedoc-material-theme"],
   "themeColor": "#FA8F05",
-  "out": "../../docs/public/hermes-mongodb"
+  "out": "../../docs/public/hermes-mongodb",
+  "highlightLanguages": ["typescript", "javascript", "bash", "sql", "json", "ini"]
 }

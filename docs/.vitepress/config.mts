@@ -24,9 +24,12 @@ export default defineConfig({
     sidebar: [
       { text: 'What is Hermes', link: '/pages/what-is-hermes.md' },
       { text: 'Getting Started', link: '/pages/getting-started.md' },
+      { text: 'Every* system is distributed (essey)', link: 'https://www.knowhowcode.dev/articles/outbox/' },
       {
         text: 'Examples',
         items: [
+          { text: 'PostgreSQL: Patient Registration', link: '/pages/postgresql-patient-registration.md' },
+          { text: 'MongoDB: Medicine Assignment', link: '/pages/mongodb-medicine-assignment.md' },
           { text: 'RabbitMQ Examples', link: '/pages/rabbitmq.md' },
           { text: 'Apache Pulsar Examples', link: '/pages/pulsar.md' },
         ],

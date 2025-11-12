@@ -1,5 +1,3 @@
-# Hermes PostgreSQL
-
 _A mythical god who brings reliability to your system 🫒 by implementing the Outbox pattern, so you don't have to think of it too much._
 
 _You don't have to pray for the gifts of nature. Just run npm and type:_

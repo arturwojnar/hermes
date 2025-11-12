@@ -12,7 +12,8 @@
     "lint-fix": "eslint --fix -f unix \"src/**/*.{ts,tsx}\"",
     "test": "node --experimental-vm-modules ../../node_modules/.bin/jest --colors --coverage --verbose --maxConcurrency=5",
     "typecheck": "tsc --noEmit",
-    "typedoc": "typedoc"
+    "typedoc": "typedoc",
+    "typedoc:watch": "typedoc --watch"
   },
   "keywords": [
     "outbox",

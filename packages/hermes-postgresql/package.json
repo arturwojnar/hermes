@@ -14,7 +14,8 @@
     "prepare": "husky",
     "test": "node --experimental-vm-modules ../../node_modules/.bin/jest --colors --coverage --verbose --detectOpenHandles --forceExit --maxConcurrency=1",
     "typecheck": "tsc --noEmit",
-    "typedoc": "typedoc"
+    "typedoc": "typedoc --favicon public/favicon.ico",
+    "typedoc:watch": "typedoc --favicon public/favicon.ico --watch"
   },
   "keywords": [
     "outbox",

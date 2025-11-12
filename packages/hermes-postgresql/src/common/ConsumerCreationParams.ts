@@ -5,62 +5,122 @@ import { UseAsyncOutboxPolicy } from '../policies/useBasicAsyncStoragePolicy.js'
 import { PublishingQueue } from '../publishingQueue/publishingQueue.js'
 import { HermesMessageEnvelope, NowFunction } from './types.js'
 
+/**
+ * Configuration parameters for creating an outbox consumer.
+ *
+ * @template Message - The type of domain messages/events this consumer will handle
+ *
+ * @example
+ * ```typescript
+ * const params: ConsumerCreationParams<DomainEvent> = {
+ *   getOptions: () => ({
+ *     host: 'localhost',
+ *     port: 5432,
+ *     database: 'mydb',
+ *     user: 'user',
+ *     password: 'pass'
+ *   }),
+ *   publish: async (envelope) => {
+ *     await messageBroker.publish(envelope.message)
+ *   },
+ *   consumerName: 'my-service'
+ * }
+ * ```
+ */
 type ConsumerCreationParams<Message extends JSONValue> = {
-  getOptions: () => Options<Record<string, PostgresType>>
-  // db: Db
-  publish: (message: HermesMessageEnvelope<Message> | HermesMessageEnvelope<Message>[]) => AsyncOrSync<void> | never
   /**
-   * Consumer name.
+   * Function that returns PostgreSQL connection options.
+   *
+   * @returns Postgres.js connection options
+   * @see {@link https://github.com/porsager/postgres#connection-parameters}
+   */
+  getOptions: () => Options<Record<string, PostgresType>>
+
+  /**
+   * Callback invoked when Hermes delivers a message.
+   *
+   * If this callback completes successfully, the message is acknowledged.
+   * If it throws an error, the message will be retried.
+   *
+   * @param message - Single message or array of messages to publish
+   * @throws Error to trigger redelivery
+   */
+  publish: (message: HermesMessageEnvelope<Message> | HermesMessageEnvelope<Message>[]) => AsyncOrSync<void> | never
+
+  /**
+   * Unique name for this consumer instance.
+   *
+   * Used to create a PostgreSQL replication slot.
    */
   consumerName: string
+
   /**
-   * @defaultValue `default`
+   * Partition key for horizontal scaling.
+   *
+   * @defaultValue `'default'`
    */
   partitionKey?: string
+
   /**
-   * @defaultValue Duration.ofSeconds(1)
+   * Duration to wait after a failed publish attempt before retrying.
+   *
+   * @defaultValue `Duration.ofSeconds(30)`
    */
   waitAfterFailedPublish?: Duration
+
   /**
-   * @defaultValue true
+   * Whether to automatically stop the consumer on SIGTERM/SIGINT signals.
+   *
+   * @defaultValue `true`
    */
   shouldDisposeOnSigterm?: boolean
+
   /**
-   * Use with consciously and carefully.
-   * When `true`, Hermes will be affecting many documents, resulting in much more I/O operations.
-   * @defaultValue false
+   * Whether to save processing timestamps for each message.
+   *
+   * ⚠️ Use with caution: Significantly increases I/O operations.
+   *
+   * @defaultValue `false`
    */
   saveTimestamps?: boolean
 
   /**
-   * A component responsible for publishing and acknowleding messages.
+   * Whether to process messages serially (one at a time) or concurrently.
    *
-   * @default
-   * @type {?PublishingQueue<'NonBlockingPublishingQueue'>}
-   */
-  // publishingQueue?: PublishingQueue<PublishingQueueType>
-
-  /**
-   * TODO
-   *
-   * @default false
-   * @type {?boolean}
+   * @defaultValue `false`
    */
   serialization?: boolean
+
   /**
-   * @defaultValue `noop`
+   * Callback invoked when message publishing fails.
+   *
+   * @param error - The error that occurred
+   * @defaultValue No-op function
    */
   onFailedPublish?: ErrorCallback
+
   /**
-   * @defaultValue `noop`
+   * Callback invoked when a database error occurs.
+   *
+   * @param error - The database error
+   * @defaultValue No-op function
    */
   onDbError?: ErrorCallback
+
   /**
+   * Function that returns the current date/time.
+   *
+   * @returns Current date/time
    * @defaultValue `() => new Date()`
    */
   now?: NowFunction
+
   /**
-   * If you want to use a separate async outbox, pass a policy that creates it.
+   * Policy for configuring a separate async outbox consumer.
+   *
+   * The async outbox is used for non-critical messages like compensations.
+   *
+   * @see {@link useBasicAsyncOutboxConsumerPolicy}
    */
   asyncOutbox?: UseAsyncOutboxPolicy<Message>
 }
